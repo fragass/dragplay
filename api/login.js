@@ -1,30 +1,101 @@
-import crypto from "crypto";
+const crypto = require("crypto");
+const { createClient } = require("@supabase/supabase-js");
 
-export default function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ success: false, message: "Método não permitido" });
-  }
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 
-  const { username, password } = req.body;
+const supabaseAnon = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  const usersEnv = process.env.LOGIN_USERS || "";
-  const usersArray = usersEnv.split(",");
+function sendJson(res, status, payload) {
+  return res.status(status).json(payload);
+}
 
-  const usersMap = {};
-  usersArray.forEach(pair => {
-    const [user, pass] = pair.split(":");
-    if (user && pass) usersMap[user] = pass;
+function readJsonBody(req) {
+  return new Promise((resolve, reject) => {
+    let data = "";
+
+    req.on("data", (chunk) => {
+      data += chunk;
+    });
+
+    req.on("end", () => {
+      try {
+        resolve(data ? JSON.parse(data) : {});
+      } catch (err) {
+        reject(err);
+      }
+    });
+
+    req.on("error", reject);
   });
+}
 
-  if (usersMap[username] && usersMap[username] === password) {
-    const token = crypto.randomBytes(32).toString("hex");
-
-    return res.status(200).json({
-      success: true,
-      token,
-      user: username
+async function handleLogin(req, res) {
+  if (req.method !== "POST") {
+    return sendJson(res, 405, {
+      success: false,
+      message: "Método não permitido",
     });
   }
 
-  return res.status(401).json({ success: false });
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    return sendJson(res, 500, {
+      success: false,
+      message: "Supabase não configurado",
+    });
+  }
+
+  try {
+    const body = await readJsonBody(req);
+    const username = String(body?.username || "").trim();
+    const password = String(body?.password || "");
+
+    if (!username || !password) {
+      return sendJson(res, 400, {
+        success: false,
+        message: "Dados incompletos",
+      });
+    }
+
+    const { data, error } = await supabaseAnon
+      .from("users")
+      .select("username, password, is_admin")
+      .eq("username", username)
+      .single();
+
+    if (error || !data) {
+      return sendJson(res, 401, {
+        success: false,
+        message: "Usuário ou senha inválidos",
+      });
+    }
+
+    if (data.password !== password) {
+      return sendJson(res, 401, {
+        success: false,
+        message: "Usuário ou senha inválidos",
+      });
+    }
+
+    const token = crypto.randomBytes(32).toString("hex");
+
+    return sendJson(res, 200, {
+      success: true,
+      token,
+      user: data.username,
+      isAdmin: !!data.is_admin,
+    });
+  } catch {
+    return sendJson(res, 500, {
+      success: false,
+      message: "Erro interno",
+    });
+  }
 }
+
+module.exports = handleLogin;
+module.exports.config = {
+  api: {
+    bodyParser: false,
+  },
+};
