@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+      <script>
+    if (!sessionStorage.getItem("token")) {
+      window.location.href = "index.html";
+    }
+  </script>
     <link rel="icon" href="favicon.png" type="image/png">
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
