@@ -16,5 +16,5 @@ window.SITE_CONFIG = {
   CORE: "psx",
 
   // CDN estável oficial do EmulatorJS.
-  DATA_PATH: "https://cdn.emulatorjs.org/stable/data/"
+  DATA_PATH: "./data/"
 };
