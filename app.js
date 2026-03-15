@@ -101,7 +101,7 @@
     }
 
     if (isArchiveExtension(ext)) {
-      elements.playerHelperText.innerHTML = "Você está usando um pacote compactado. Se sair som e não aparecer imagem, extraia e use o <code>.cue</code>.";
+      elements.playerHelperText.innerHTML = "Você está usando um pacote compactado. Se sair som e não aparecer imagem, teste pelo <code>.cue</code>.";
       elements.noticeBox.innerHTML = "Arquivo compactado detectado. Pode funcionar, mas para PS1 é mais seguro extrair o jogo e arrastar o <code>.cue</code>.";
       return;
     }
