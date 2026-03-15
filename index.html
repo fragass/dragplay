@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title></title>
+  <meta name="theme-color" content="#0a0a0f" />
+
+  <style>
+    *{
+      box-sizing:border-box;
+    }
+
+    html,body{
+      margin:0;
+      width:100%;
+      min-height:100%;
+    }
+
+    body{
+      background:#0a0a0f;
+      color:#e6e6e6;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;
+    }
+
+    a{
+      color:inherit;
+    }
+
+    button,
+    input{
+      font:inherit;
+    }
+
+    .hidden{
+      display:none !important;
+    }
+
+    .bg{
+      position:fixed;
+      inset:0;
+      background:
+        radial-gradient(circle at top, rgba(106,0,255,.12) 0%, rgba(106,0,255,.04) 20%, transparent 45%),
+        #0a0a0f;
+      pointer-events:none;
+    }
+
+    .shell{
+      position:relative;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:28px;
+    }
+
+    .hero{
+      width:100%;
+      max-width:720px;
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+    }
+
+    .hero__copy{
+      display:none;
+    }
+
+    .eyebrow{
+      margin:0;
+      font-size:12px;
+      letter-spacing:2px;
+      color:#8a8a8a;
+      text-transform:uppercase;
+    }
+
+    .status-rail{
+      display:none;
+    }
+
+    .panel{
+      position:relative;
+      background:#111116;
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:14px;
+      padding:54px 24px 24px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+      box-shadow:0 12px 40px rgba(0,0,0,.35);
+    }
+
+    .tip-box,
+    .divider,
+    .remote-box,
+    .advanced,
+    .current-selection,
+    .actions,
+    .notice{
+      width:100%;
+    }
+
+    .download-top{
+      position:absolute;
+      top:16px;
+      left:16px;
+      font-size:14px;
+      text-decoration:none;
+      color:#b8b8b8;
+      padding:6px 10px;
+      border-radius:6px;
+      transition:.15s;
+    }
+
+    .download-top:hover{
+      color:#fff;
+      background:rgba(255,255,255,.05);
+    }
+
+    .tip-box{
+      display:none;
+    }
+
+    .dropzone{
+      width:100%;
+      min-height:180px;
+      border:1px dashed rgba(255,255,255,.14);
+      border-radius:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:24px;
+      cursor:pointer;
+      transition:.15s border-color, .15s background-color;
+      outline:none;
+      background:rgba(255,255,255,.01);
+    }
+
+    .dropzone:hover,
+    .dropzone:focus{
+      border-color:rgba(106,0,255,.75);
+      background:rgba(106,0,255,.04);
+    }
+
+    .dropzone__icon{
+      display:none;
+    }
+
+    .dropzone__text{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      align-items:center;
+      justify-content:center;
+      max-width:420px;
+    }
+
+    .dropzone__text h2{
+      margin:0;
+      font-size:15px;
+      font-weight:500;
+      color:#f2f2f2;
+    }
+
+    .dropzone__text p{
+      margin:0;
+      font-size:13px;
+      line-height:1.5;
+      color:#8b8b8b;
+    }
+
+    .dropzone__hint{
+      font-size:12px;
+      color:#a7a7a7;
+    }
+
+    .download-shortcut{
+      font-size:12px;
+      color:#9f74ff;
+      text-decoration:none;
+    }
+
+    .download-shortcut:hover{
+      color:#b895ff;
+    }
+
+    .divider{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#666;
+      font-size:11px;
+      letter-spacing:2px;
+      text-transform:uppercase;
+    }
+
+    .divider span{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .divider span::before,
+    .divider span::after{
+      content:"";
+      display:block;
+      width:32px;
+      height:1px;
+      background:rgba(255,255,255,.07);
+    }
+
+    .remote-box{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .remote-box label,
+    .advanced__content label,
+    .file-inline span{
+      font-size:12px;
+      color:#8b8b8b;
+    }
+
+    .inline-fields{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .inline-fields input,
+    .advanced__content input[type="url"]{
+      flex:1;
+      min-width:220px;
+      height:42px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,.08);
+      background:#0d0d12;
+      color:#e6e6e6;
+      padding:0 12px;
+      outline:none;
+    }
+
+    .inline-fields input:focus,
+    .advanced__content input[type="url"]:focus{
+      border-color:rgba(106,0,255,.65);
+    }
+
+    .subtle{
+      margin:0;
+      font-size:12px;
+      color:#6f6f6f;
+      line-height:1.5;
+    }
+
+    .advanced{
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:10px;
+      background:#0d0d12;
+      overflow:hidden;
+    }
+
+    .advanced summary{
+      list-style:none;
+      cursor:pointer;
+      padding:14px 14px;
+      font-size:13px;
+      color:#c7c7c7;
+      user-select:none;
+    }
+
+    .advanced summary::-webkit-details-marker{
+      display:none;
+    }
+
+    .advanced__content{
+      padding:0 14px 14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .file-inline{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .file-inline input[type="file"],
+    #biosFileInput{
+      color:#9d9d9d;
+      font-size:12px;
+    }
+
+    .toggle{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:12px;
+      color:#9a9a9a;
+    }
+
+    .current-selection{
+      min-height:42px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:10px;
+      background:#0d0d12;
+      padding:10px 12px;
+      color:#9d9d9d;
+      font-size:12px;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      height:42px;
+      padding:0 18px;
+      border-radius:8px;
+      border:none;
+      cursor:pointer;
+      transition:.15s;
+    }
+
+    .btn--primary{
+      background:#6a00ff;
+      color:#fff;
+    }
+
+    .btn--primary:hover{
+      background:#7c1cff;
+    }
+
+    .btn--primary:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+    }
+
+    .btn--ghost{
+      background:transparent;
+      color:#c4c4c4;
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .btn--ghost:hover{
+      background:rgba(255,255,255,.04);
+      color:#fff;
+    }
+
+    .notice{
+      margin:0;
+      font-size:12px;
+      color:#707070;
+      line-height:1.5;
+    }
+
+    .player-shell{
+      width:100%;
+      max-width:1100px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .player-topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      background:#111116;
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:14px;
+      padding:14px 16px;
+    }
+
+    .player-topbar h2{
+      margin:4px 0 0;
+      font-size:16px;
+      font-weight:500;
+      color:#f2f2f2;
+    }
+
+    .player-helper{
+      background:#111116;
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:10px;
+      padding:10px 14px;
+      color:#8d8d8d;
+      font-size:12px;
+    }
+
+    .player-stage{
+      background:#111116;
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:14px;
+      padding:14px;
+      box-shadow:0 12px 40px rgba(0,0,0,.35);
+    }
+
+    .player-frame{
+      width:100%;
+      aspect-ratio:16 / 9;
+      background:#000;
+      border-radius:10px;
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    #game{
+      width:100%;
+      height:100%;
+      min-height:100%;
+    }
+
+    #game iframe,
+    #game canvas{
+      width:100% !important;
+      height:100% !important;
+      display:block;
+    }
+
+    @media (max-width: 640px){
+      .shell{
+        padding:16px;
+      }
+
+      .panel{
+        padding:52px 16px 16px;
+      }
+
+      .inline-fields{
+        flex-direction:column;
+      }
+
+      .inline-fields input,
+      .advanced__content input[type="url"]{
+        min-width:0;
+        width:100%;
+      }
+
+      .actions{
+        flex-direction:column;
+      }
+
+      .btn{
+        width:100%;
+      }
+
+      .player-topbar{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+
+      .player-frame{
+        aspect-ratio:4 / 3;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+
+  <main class="shell" id="appShell">
+    <section class="hero" id="heroSection">
+      <div class="hero__copy">
+        <p class="eyebrow">PlayStation / EmulatorJS</p>
+        <h1>Drag <span>•</span> Wait <span>•</span> Play</h1>
+        <p class="lead">
+          Fluxo simples pra baixar o jogo, extrair e rodar no navegador. Para PS1,
+          o caminho mais seguro é extrair o pacote e arrastar o arquivo <strong>.cue</strong>.
+        </p>
+      </div>
+
+      <div class="status-rail" aria-label="Fluxo de carregamento">
+        <div class="status-card is-active" data-step-card="drag">
+          <strong>01</strong>
+          <span>Drag</span>
+          <small>arraste o .cue</small>
+        </div>
+        <div class="status-card" data-step-card="wait">
+          <strong>02</strong>
+          <span>Wait</span>
+          <small>preparando o disco</small>
+        </div>
+        <div class="status-card" data-step-card="play">
+          <strong>03</strong>
+          <span>Play</span>
+          <small>emulador liberado</small>
+        </div>
+      </div>
+
+      <div class="panel">
+
+        <div class="tip-box">
+          <strong>Melhor forma para PS1</strong>
+          <p>Baixe o jogo na página <a href="./download.html">download</a>, extraia o pacote e arraste o arquivo <code>.cue</code>. O <code>.bin</code> precisa ficar na mesma pasta.</p>
+        </div>
+
+        <label
+          id="dropZone"
+          class="dropzone"
+          for="romFileInput"
+          tabindex="0"
+          aria-label="Arraste o arquivo do jogo ou clique para selecionar"
+        >
+          <input
+            id="romFileInput"
+            type="file"
+            accept=".cue,.chd,.pbp,.m3u,.ccd,.zip,.7z,.bin,.img,.mdf,.toc,.cbn"
+            hidden
+          />
+          <div class="dropzone__icon">🎮</div>
+          <div class="dropzone__text">
+            <h2>Arraste ou clique para carregar</h2>
+            <p>
+              Use o arquivo baixado e carregue normalmente no emulador.
+            </p>
+            <span class="dropzone__hint">.zip, .cue, .bin e outros formatos compatíveis</span>
+            <a class="download-shortcut" href="./download.html">abrir página download</a>
+          </div>
+        </label>
+
+        <div class="divider"><span>ou</span></div>
+
+        <div class="remote-box">
+          <label for="romUrlInput">URL remota do arquivo</label>
+          <div class="inline-fields">
+            <input
+              id="romUrlInput"
+              type="url"
+              placeholder="https://seu-host.com/arquivo.cue"
+              autocomplete="off"
+            />
+            <button id="loadRemoteBtn" class="btn btn--primary" type="button">Carregar</button>
+          </div>
+          <p class="subtle">
+            Também funciona com URL remota, mantendo a lógica original.
+          </p>
+        </div>
+
+        <details class="advanced">
+          <summary>BIOS / opções avançadas</summary>
+          <div class="advanced__content">
+            <label for="biosUrlInput">URL remota da BIOS</label>
+            <input
+              id="biosUrlInput"
+              type="url"
+              placeholder="https://seu-host.com/scph5501.bin"
+              autocomplete="off"
+            />
+
+            <label class="file-inline" for="biosFileInput">
+              <span>ou selecione a BIOS local</span>
+              <input id="biosFileInput" type="file" accept=".bin" />
+            </label>
+
+            <label class="toggle">
+              <input id="autostartToggle" type="checkbox" checked />
+              <span>Iniciar automaticamente quando terminar de carregar</span>
+            </label>
+          </div>
+        </details>
+
+        <div class="current-selection" id="currentSelection">
+          <span>Nenhum arquivo selecionado.</span>
+        </div>
+
+        <div class="actions">
+          <button id="startBtn" class="btn btn--primary" type="button" disabled>Play</button>
+          <button id="resetBtn" class="btn btn--ghost" type="button">Reset</button>
+        </div>
+
+        <p class="notice" id="noticeBox">
+          Caso tenha problemas com o .zip teste pelo .cue
+        </p>
+      </div>
+    </section>
+
+    <section class="player-shell hidden" id="playerShell">
+      <div class="player-topbar">
+        <div>
+          <p class="eyebrow">Em execução</p>
+          <h2 id="gameTitle">RE2: DUALSHOCK</h2>
+        </div>
+        <button id="backBtn" class="btn btn--ghost" type="button">Voltar</button>
+      </div>
+
+      <div class="player-helper">
+        <span id="playerHelperText">Carregado no EmulatorJS.</span>
+      </div>
+
+      <div class="player-stage">
+        <div class="player-frame">
+          <div id="game"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="./config.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

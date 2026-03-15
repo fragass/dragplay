@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title></title>
+<meta name="theme-color" content="#0a0a0f" />
+
+<style>
+*{box-sizing:border-box}
+
+html,body{
+  margin:0;
+  width:100%;
+  min-height:100%;
+}
+
+body{
+  background:#0a0a0f;
+  color:#e6e6e6;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;
+}
+
+.bg{
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(circle at top, rgba(106,0,255,.12) 0%, rgba(106,0,255,.04) 20%, transparent 45%),
+    #0a0a0f;
+  pointer-events:none;
+}
+
+.shell{
+  position:relative;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:28px;
+}
+
+.card{
+  position:relative;
+  width:100%;
+  max-width:720px;
+  background:#111116;
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:14px;
+  padding:54px 24px 24px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  box-shadow:0 12px 40px rgba(0,0,0,.35);
+}
+
+.back{
+  position:absolute;
+  top:16px;
+  left:16px;
+  font-size:14px;
+  text-decoration:none;
+  color:#b8b8b8;
+  padding:6px 10px;
+  border-radius:6px;
+  transition:.15s;
+}
+
+.back:hover{
+  color:#fff;
+  background:rgba(255,255,255,.05);
+}
+
+.game{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  padding:14px;
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:10px;
+  background:rgba(255,255,255,.01);
+}
+
+.game-title{
+  margin:0;
+  font-size:14px;
+  font-weight:600;
+  color:#f2f2f2;
+  letter-spacing:.4px;
+}
+
+.options{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+.btn{
+  min-width:140px;
+  height:42px;
+  padding:0 18px;
+  border-radius:8px;
+  border:none;
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:#6a00ff;
+  color:#fff;
+  transition:.15s;
+}
+
+.btn:hover{
+  background:#7c1cff;
+}
+
+.btn--ghost{
+  background:transparent;
+  color:#c4c4c4;
+  border:1px solid rgba(255,255,255,.08);
+}
+
+.btn--ghost:hover{
+  background:rgba(255,255,255,.04);
+  color:#fff;
+}
+
+.meta{
+  font-size:12px;
+  color:#8b8b8b;
+}
+
+.footer{
+  margin-top:2px;
+  text-align:center;
+  font-size:12px;
+  color:#6f6f6f;
+}
+
+@media (max-width: 640px){
+  .shell{
+    padding:16px;
+  }
+
+  .card{
+    padding:52px 16px 16px;
+  }
+
+  .options{
+    flex-direction:column;
+  }
+
+  .btn{
+    width:100%;
+  }
+}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<main class="shell">
+  <section class="card">
+    <a class="back" href="./index.html">Voltar</a>
+
+    <div class="game">
+      <h2 class="game-title">RE2: DUALSHOCK</h2>
+      <div class="options">
+        <a class="btn" href="https://drive.google.com/uc?export=download&id=1eZi69gWI21W0X2tvjqnw_LC54K_olBMA">Download .zip</a>
+        <a class="btn btn--ghost" href="https://drive.google.com/uc?export=download&id=1BZNTtwVymVtTfxbNgx0QgHgvozqF6r_k">Download .cue</a>
+      </div>
+      <div class="meta">Google Drive</div>
+    </div>
+
+    <div class="game">
+      <h2 class="game-title">Crash Bandicoot</h2>
+      <div class="options">
+        <a class="btn" href="https://drive.google.com/uc?export=download&id=1MALQyXob_pQDECw7zLzhxu7L12cZhfxn">Download .zip</a>
+        <a class="btn btn--ghost" href="https://drive.google.com/uc?export=download&id=1D1hp9mpGapyi6FwLt2Ml3Vvl0l1wYs-r">Download .cue</a>
+      </div>
+      <div class="meta">Google Drive</div>
+    </div>
+  </section>
+</main>
+</body>
+</html>
