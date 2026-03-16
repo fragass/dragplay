@@ -160,6 +160,34 @@ body{
     width:100%;
   }
 }
+      .status-dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#3cff5c;
+  display:inline-block;
+  margin-right:8px;
+  box-shadow:0 0 6px #3cff5c;
+  animation:pulse 1.6s infinite;
+}
+
+@keyframes pulse{
+  0%{
+    transform:scale(1);
+    opacity:1;
+    box-shadow:0 0 6px #3cff5c;
+  }
+  50%{
+    transform:scale(1.4);
+    opacity:.6;
+    box-shadow:0 0 10px #3cff5c;
+  }
+  100%{
+    transform:scale(1);
+    opacity:1;
+    box-shadow:0 0 6px #3cff5c;
+  }
+}
 </style>
 </head>
 <body>
@@ -170,7 +198,7 @@ body{
     <a class="back" href="./reyalp.html">Voltar</a>
 
     <div class="game">
-      <h2 class="game-title">RE2: DUALSHOCK</h2>
+      <h2 class="game-title"><span class="status-dot"></span> RE2: DUALSHOCK</h2>
       <div class="options">
         <a class="btn" href="https://drive.google.com/uc?export=download&id=1eZi69gWI21W0X2tvjqnw_LC54K_olBMA">Download .zip</a>
         <a class="btn btn--ghost" href="https://drive.google.com/uc?export=download&id=1BZNTtwVymVtTfxbNgx0QgHgvozqF6r_k">Download .cue</a>
@@ -179,7 +207,7 @@ body{
     </div>
 
     <div class="game">
-      <h2 class="game-title">Crash Bandicoot</h2>
+      <h2 class="game-title"><span class="status-dot"></span> Crash Bandicoot</h2>
       <div class="options">
         <a class="btn" href="https://drive.google.com/uc?export=download&id=1MALQyXob_pQDECw7zLzhxu7L12cZhfxn">Download .zip</a>
         <a class="btn btn--ghost" href="https://drive.google.com/uc?export=download&id=1D1hp9mpGapyi6FwLt2Ml3Vvl0l1wYs-r">Download .cue</a>
@@ -188,7 +216,7 @@ body{
     </div>
 
     <div class="game">
-      <h2 class="game-title">Need for Speed 3: Hot Pursuit</h2>
+      <h2 class="game-title"><span class="status-dot"></span> Need for Speed 3: Hot Pursuit</h2>
       <div class="options">
         <a class="btn" href="https://drive.google.com/uc?export=download&id=1Vh80hnQ5SgwhUbjE4gQbSE88MfjVVXfd">Download .zip</a>
         <a class="btn btn--ghost" href="https://drive.google.com/uc?export=download&id=1PMb7NEcTzX3VDnnAavl4BB1pl0-a46I3">Download .cue</a>
@@ -197,7 +225,7 @@ body{
     </div>
 
             <div class="game">
-      <h2 class="game-title">Silent Hill 1</h2>
+      <h2 class="game-title"><span class="status-dot"></span> Silent Hill 1</h2>
       <div class="options">
         <a class="btn" href="https://drive.google.com/uc?export=download&id=11TV8DXJUQ8nUpOtO9AyWs_7JDWYt7cUL">Download .zip</a>
         <a class="btn btn--ghost" href="https://drive.google.com/uc?export=download&id=1tuft3dWSCBSKNxEuO-WKi0VfyxKh5SXj">Download .cue</a>
