@@ -1,250 +1,331 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-      <script>
+  <script>
     if (!sessionStorage.getItem("token")) {
       window.location.href = "index.html";
     }
   </script>
-    <link rel="icon" href="favicon.png" type="image/png">
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Página Inicial - Workday</title>
-<meta name="theme-color" content="#0a0a0f" />
+  <link rel="icon" href="favicon.png" type="image/png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Página Inicial - Workday</title>
+  <meta name="theme-color" content="#0a0a0f" />
 
-<style>
-*{box-sizing:border-box}
+  <style>
+    *{box-sizing:border-box}
 
-html,body{
-  margin:0;
-  width:100%;
-  min-height:100%;
-}
+    html,body{
+      margin:0;
+      width:100%;
+      min-height:100%;
+    }
 
-body{
-  background:#0a0a0f;
-  color:#e6e6e6;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;
-}
+    body{
+      background:#0a0a0f;
+      color:#e6e6e6;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;
+    }
 
-.bg{
-  position:fixed;
-  inset:0;
-  background:
-    radial-gradient(circle at top, rgba(106,0,255,.12) 0%, rgba(106,0,255,.04) 20%, transparent 45%),
-    #0a0a0f;
-  pointer-events:none;
-}
+    .bg{
+      position:fixed;
+      inset:0;
+      background:
+        radial-gradient(circle at top, rgba(106,0,255,.12) 0%, rgba(106,0,255,.04) 20%, transparent 45%),
+        #0a0a0f;
+      pointer-events:none;
+    }
 
-.shell{
-  position:relative;
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:28px;
-}
+    .shell{
+      position:relative;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:28px;
+    }
 
-.card{
-  position:relative;
-  width:100%;
-  max-width:720px;
-  background:#111116;
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:14px;
-  padding:54px 24px 24px;
-  display:flex;
-  flex-direction:column;
-  gap:18px;
-  box-shadow:0 12px 40px rgba(0,0,0,.35);
-}
+    .card{
+      position:relative;
+      width:100%;
+      max-width:720px;
+      background:#111116;
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:14px;
+      padding:54px 24px 24px;
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+      box-shadow:0 12px 40px rgba(0,0,0,.35);
+    }
 
-.back{
-  position:absolute;
-  top:16px;
-  left:16px;
-  font-size:14px;
-  text-decoration:none;
-  color:#b8b8b8;
-  padding:6px 10px;
-  border-radius:6px;
-  transition:.15s;
-}
+    .back{
+      position:absolute;
+      top:16px;
+      left:16px;
+      font-size:14px;
+      text-decoration:none;
+      color:#b8b8b8;
+      padding:6px 10px;
+      border-radius:6px;
+      transition:.15s;
+    }
 
-.back:hover{
-  color:#fff;
-  background:rgba(255,255,255,.05);
-}
+    .back:hover{
+      color:#fff;
+      background:rgba(255,255,255,.05);
+    }
 
-.game{
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-  padding:14px;
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:10px;
-  background:rgba(255,255,255,.01);
-}
+    .game{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      padding:14px;
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:10px;
+      background:rgba(255,255,255,.01);
+    }
 
-.game-title{
-  margin:0;
-  font-size:14px;
-  font-weight:600;
-  color:#f2f2f2;
-  letter-spacing:.4px;
-}
+    .game-title{
+      margin:0;
+      font-size:14px;
+      font-weight:600;
+      color:#f2f2f2;
+      letter-spacing:.4px;
+      display:flex;
+      align-items:center;
+    }
 
-.options{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-}
+    .options{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
 
-.btn{
-  min-width:140px;
-  height:42px;
-  padding:0 18px;
-  border-radius:8px;
-  border:none;
-  cursor:pointer;
-  text-decoration:none;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  background:#6a00ff;
-  color:#fff;
-  transition:.15s;
-}
+    .btn{
+      min-width:140px;
+      height:42px;
+      padding:0 18px;
+      border-radius:8px;
+      border:none;
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:#6a00ff;
+      color:#fff;
+      transition:.15s;
+    }
 
-.btn:hover{
-  background:#7c1cff;
-}
+    .btn:hover{
+      background:#7c1cff;
+    }
 
-.btn--ghost{
-  background:transparent;
-  color:#c4c4c4;
-  border:1px solid rgba(255,255,255,.08);
-}
+    .btn--ghost{
+      background:transparent;
+      color:#c4c4c4;
+      border:1px solid rgba(255,255,255,.08);
+    }
 
-.btn--ghost:hover{
-  background:rgba(255,255,255,.04);
-  color:#fff;
-}
+    .btn--ghost:hover{
+      background:rgba(255,255,255,.04);
+      color:#fff;
+    }
 
-.meta{
-  font-size:12px;
-  color:#8b8b8b;
-}
+    .btn--disabled{
+      pointer-events:none;
+      opacity:.45;
+      cursor:not-allowed;
+    }
 
-.footer{
-  margin-top:2px;
-  text-align:center;
-  font-size:12px;
-  color:#6f6f6f;
-}
+    .meta{
+      font-size:12px;
+      color:#8b8b8b;
+    }
 
-@media (max-width: 640px){
-  .shell{
-    padding:16px;
-  }
+    .footer{
+      margin-top:2px;
+      text-align:center;
+      font-size:12px;
+      color:#6f6f6f;
+    }
 
-  .card{
-    padding:52px 16px 16px;
-  }
+    .status-dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      display:inline-block;
+      margin-right:8px;
+      animation:pulse 1.6s infinite;
+      flex-shrink:0;
+    }
 
-  .options{
-    flex-direction:column;
-  }
+    .status-online{
+      background:#3cff5c;
+      box-shadow:0 0 6px #3cff5c;
+    }
 
-  .btn{
-    width:100%;
-  }
-}
-      .status-dot{
-  width:8px;
-  height:8px;
-  border-radius:50%;
-  background:#3cff5c;
-  display:inline-block;
-  margin-right:8px;
-  box-shadow:0 0 6px #3cff5c;
-  animation:pulse 1.6s infinite;
-}
+    .status-offline{
+      background:#ff4d4d;
+      box-shadow:0 0 6px #ff4d4d;
+    }
 
-@keyframes pulse{
-  0%{
-    transform:scale(1);
-    opacity:1;
-    box-shadow:0 0 6px #3cff5c;
-  }
-  50%{
-    transform:scale(1.4);
-    opacity:.6;
-    box-shadow:0 0 10px #3cff5c;
-  }
-  100%{
-    transform:scale(1);
-    opacity:1;
-    box-shadow:0 0 6px #3cff5c;
-  }
-}
-</style>
+    .status-maintenance{
+      background:#ffb347;
+      box-shadow:0 0 6px #ffb347;
+    }
+
+    .loading,
+    .error,
+    .empty{
+      padding:14px;
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:10px;
+      background:rgba(255,255,255,.01);
+      font-size:13px;
+      color:#8b8b8b;
+    }
+
+    .error{
+      color:#ff9f9f;
+    }
+
+    @keyframes pulse{
+      0%{
+        transform:scale(1);
+        opacity:1;
+      }
+      50%{
+        transform:scale(1.35);
+        opacity:.6;
+      }
+      100%{
+        transform:scale(1);
+        opacity:1;
+      }
+    }
+
+    @media (max-width: 640px){
+      .shell{
+        padding:16px;
+      }
+
+      .card{
+        padding:52px 16px 16px;
+      }
+
+      .options{
+        flex-direction:column;
+      }
+
+      .btn{
+        width:100%;
+      }
+    }
+  </style>
 </head>
 <body>
-<div class="bg"></div>
+  <div class="bg"></div>
 
-<main class="shell">
-  <section class="card">
-    <a class="back" href="./reyalp.html">Voltar</a>
+  <main class="shell">
+    <section class="card">
+      <a class="back" href="./reyalp.html">Voltar</a>
 
-    <div class="game">
-      <h2 class="game-title"><span class="status-dot"></span> RE2: DUALSHOCK</h2>
-      <div class="options">
-        <a class="btn" href="https://drive.google.com/uc?export=download&id=1eZi69gWI21W0X2tvjqnw_LC54K_olBMA">Download .zip</a>
-        <a class="btn btn--ghost" href="https://drive.google.com/uc?export=download&id=1BZNTtwVymVtTfxbNgx0QgHgvozqF6r_k">Download .cue</a>
+      <div id="gamesContainer">
+        <div class="loading">Carregando jogos...</div>
       </div>
-      <div class="meta">Google Drive</div>
-    </div>
+    </section>
+  </main>
 
-    <div class="game">
-      <h2 class="game-title"><span class="status-dot"></span> Crash Bandicoot</h2>
-      <div class="options">
-        <a class="btn" href="https://drive.google.com/uc?export=download&id=1MALQyXob_pQDECw7zLzhxu7L12cZhfxn">Download .zip</a>
-        <a class="btn btn--ghost" href="https://drive.google.com/uc?export=download&id=1D1hp9mpGapyi6FwLt2Ml3Vvl0l1wYs-r">Download .cue</a>
-      </div>
-      <div class="meta">Google Drive</div>
-    </div>
-
-    <div class="game">
-      <h2 class="game-title"><span class="status-dot"></span> Need for Speed 3: Hot Pursuit</h2>
-      <div class="options">
-        <a class="btn" href="https://drive.google.com/uc?export=download&id=1Vh80hnQ5SgwhUbjE4gQbSE88MfjVVXfd">Download .zip</a>
-        <a class="btn btn--ghost" href="https://drive.google.com/uc?export=download&id=1PMb7NEcTzX3VDnnAavl4BB1pl0-a46I3">Download .cue</a>
-      </div>
-      <div class="meta">Google Drive</div>
-    </div>
-
-            <div class="game">
-      <h2 class="game-title"><span class="status-dot"></span> Silent Hill 1</h2>
-      <div class="options">
-        <a class="btn" href="https://drive.google.com/uc?export=download&id=11TV8DXJUQ8nUpOtO9AyWs_7JDWYt7cUL">Download .zip</a>
-        <a class="btn btn--ghost" href="https://drive.google.com/uc?export=download&id=1tuft3dWSCBSKNxEuO-WKi0VfyxKh5SXj">Download .cue</a>
-      </div>
-      <div class="meta">Google Drive</div>
-    </div>
-
-                    <div class="game">
-      <h2 class="game-title"><span class="status-dot"></span> Mortal Kombat 4</h2>
-      <div class="options">
-        <a class="btn" href="https://drive.google.com/uc?export=download&id=1Brn-p6WIN960UEIpvCcEI8dCeaTeL6sa">Download .zip</a>
-        <a class="btn btn--ghost" href="https://drive.google.com/uc?export=download&id=1x4Wq4JUCppCmQnk53hwJVvyuEckotH1U">Download .cue</a>
-      </div>
-      <div class="meta">Google Drive</div>
-    </div>
-  </section>
-</main>
-        <span style="position:fixed; bottom:10px; left:10px; opacity:.6; font-size:11px; z-index:999;">
+  <span style="position:fixed; bottom:10px; left:10px; opacity:.6; font-size:11px; z-index:999;">
     v0.9.0.2026.03.16
   </span>
+
+  <script>
+    const SUPABASE_URL = "YOUR_SUPABASE_URL";
+    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+
+    const gamesContainer = document.getElementById("gamesContainer");
+
+    function escapeHtml(text) {
+      return String(text || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function getStatusClass(status) {
+      if (status === "offline") return "status-offline";
+      if (status === "maintenance") return "status-maintenance";
+      return "status-online";
+    }
+
+    function buildButton(url, text, extraClass = "") {
+      if (!url) {
+        return `<span class="btn ${extraClass} btn--disabled">${text}</span>`;
+      }
+
+      return `<a class="btn ${extraClass}" href="${url}" target="_self">${text}</a>`;
+    }
+
+    function renderGames(games) {
+      if (!Array.isArray(games) || !games.length) {
+        gamesContainer.innerHTML = `<div class="empty">Nenhum jogo disponível no momento.</div>`;
+        return;
+      }
+
+      gamesContainer.innerHTML = games.map(game => {
+        const statusClass = getStatusClass(game.status);
+
+        return `
+          <div class="game">
+            <h2 class="game-title">
+              <span class="status-dot ${statusClass}"></span>
+              ${escapeHtml(game.title)}
+            </h2>
+
+            <div class="options">
+              ${buildButton(game.zip_url, "Download .zip")}
+              ${buildButton(game.cue_url, "Download .cue", "btn--ghost")}
+            </div>
+
+            <div class="meta">Google Drive</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function loadGames() {
+      try {
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/game_downloads?select=title,zip_url,cue_url,status,display_order,is_visible&is_visible=eq.true&order=display_order.asc,title.asc`,
+          {
+            method: "GET",
+            headers: {
+              "apikey": SUPABASE_ANON_KEY,
+              "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || "Erro ao carregar jogos");
+        }
+
+        const data = await response.json();
+        renderGames(data);
+      } catch (error) {
+        console.error(error);
+        gamesContainer.innerHTML = `<div class="error">Erro ao carregar os jogos.</div>`;
+      }
+    }
+
+    loadGames();
+  </script>
 </body>
 </html>
