@@ -83,6 +83,7 @@
     }
 
     .game{
+      position:relative;
       display:flex;
       flex-direction:column;
       gap:12px;
@@ -90,6 +91,21 @@
       border:1px solid rgba(255,255,255,.06);
       border-radius:10px;
       background:rgba(255,255,255,.01);
+    }
+
+    .platform-badge{
+      position:absolute;
+      top:12px;
+      right:12px;
+      padding:4px 8px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:600;
+      letter-spacing:.4px;
+      color:#d7d0ff;
+      background:rgba(106,0,255,.14);
+      border:1px solid rgba(106,0,255,.28);
+      user-select:none;
     }
 
     .game-title{
@@ -100,6 +116,7 @@
       letter-spacing:.4px;
       display:flex;
       align-items:center;
+      padding-right:64px;
     }
 
     .options{
@@ -232,6 +249,15 @@
       #gamesContainer{
         gap:12px;
       }
+
+      .platform-badge{
+        top:10px;
+        right:10px;
+      }
+
+      .game-title{
+        padding-right:56px;
+      }
     }
   </style>
 </head>
@@ -260,6 +286,8 @@
         .replaceAll("&","&amp;")
         .replaceAll("<","&lt;")
         .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;")
     }
 
     function getStatusClass(status){
@@ -284,9 +312,12 @@
 
       gamesContainer.innerHTML = games.map(game=>{
         const statusClass = getStatusClass(game.status)
+        const platform = escapeHtml(game.platform || "PS1")
 
         return `
           <div class="game">
+            <span class="platform-badge">${platform}</span>
+
             <h2 class="game-title">
               <span class="status-dot ${statusClass}"></span>
               ${escapeHtml(game.title)}
