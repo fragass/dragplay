@@ -74,8 +74,14 @@
       gap:18px;
     }
 
-    .hero__copy{
-      display:none;
+    .hero__copy,
+    .status-rail,
+    .divider,
+    .remote-box,
+    .advanced,
+    .current-selection,
+    .actions{
+      display:none !important;
     }
 
     .eyebrow{
@@ -84,10 +90,6 @@
       letter-spacing:2px;
       color:#8a8a8a;
       text-transform:uppercase;
-    }
-
-    .status-rail{
-      display:none;
     }
 
     .panel{
@@ -109,17 +111,6 @@
     .panel::-webkit-scrollbar{
       width:0;
       height:0;
-    }
-
-    .tip-box,
-    .divider,
-    .remote-box,
-    .advanced,
-    .current-selection,
-    .actions,
-    .notice{
-      width:100%;
-      flex-shrink:0;
     }
 
     .download-top{
@@ -199,194 +190,12 @@
       color:#a7a7a7;
     }
 
-    .download-shortcut{
-      font-size:12px;
-      color:#9f74ff;
-      text-decoration:none;
-    }
-
-    .download-shortcut:hover{
-      color:#b895ff;
-    }
-
-    .divider{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:#666;
-      font-size:11px;
-      letter-spacing:2px;
-      text-transform:uppercase;
-    }
-
-    .divider span{
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-    }
-
-    .divider span::before,
-    .divider span::after{
-      content:"";
-      display:block;
-      width:32px;
-      height:1px;
-      background:rgba(255,255,255,.07);
-    }
-
-    .remote-box{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-
-    .remote-box label,
-    .advanced__content label,
-    .file-inline span{
-      font-size:12px;
-      color:#8b8b8b;
-    }
-
-    .inline-fields{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      width:100%;
-    }
-
-    .inline-fields input,
-    .advanced__content input[type="url"]{
-      flex:1 1 220px;
-      width:100%;
-      min-width:0;
-      height:42px;
-      border-radius:8px;
-      border:1px solid rgba(255,255,255,.08);
-      background:#0d0d12;
-      color:#e6e6e6;
-      padding:0 12px;
-      outline:none;
-    }
-
-    .inline-fields input:focus,
-    .advanced__content input[type="url"]:focus{
-      border-color:rgba(106,0,255,.65);
-    }
-
-    .subtle{
-      margin:0;
-      font-size:12px;
-      color:#6f6f6f;
-      line-height:1.5;
-    }
-
-    .advanced{
-      border:1px solid rgba(255,255,255,.06);
-      border-radius:10px;
-      background:#0d0d12;
-      overflow:hidden;
-    }
-
-    .advanced summary{
-      list-style:none;
-      cursor:pointer;
-      padding:14px 14px;
-      font-size:13px;
-      color:#c7c7c7;
-      user-select:none;
-    }
-
-    .advanced summary::-webkit-details-marker{
-      display:none;
-    }
-
-    .advanced__content{
-      padding:0 14px 14px;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-    }
-
-    .file-inline{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-
-    .file-inline input[type="file"],
-    #biosFileInput{
-      color:#9d9d9d;
-      font-size:12px;
-    }
-
-    .toggle{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      font-size:12px;
-      color:#9a9a9a;
-    }
-
-    .current-selection{
-      min-height:42px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-      border:1px solid rgba(255,255,255,.06);
-      border-radius:10px;
-      background:#0d0d12;
-      padding:10px 12px;
-      color:#9d9d9d;
-      font-size:12px;
-    }
-
-    .actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .btn{
-      height:42px;
-      padding:0 18px;
-      border-radius:8px;
-      border:none;
-      cursor:pointer;
-      transition:.15s;
-      flex-shrink:0;
-    }
-
-    .btn--primary{
-      background:#6a00ff;
-      color:#fff;
-    }
-
-    .btn--primary:hover{
-      background:#7c1cff;
-    }
-
-    .btn--primary:disabled{
-      opacity:.45;
-      cursor:not-allowed;
-    }
-
-    .btn--ghost{
-      background:transparent;
-      color:#c4c4c4;
-      border:1px solid rgba(255,255,255,.08);
-    }
-
-    .btn--ghost:hover{
-      background:rgba(255,255,255,.04);
-      color:#fff;
-    }
-
     .notice{
       margin:0;
       font-size:12px;
       color:#707070;
       line-height:1.5;
+      width:100%;
     }
 
     .player-shell{
@@ -512,27 +321,8 @@
 
       .dropzone__text p,
       .dropzone__hint,
-      .subtle,
       .notice{
         font-size:12px;
-      }
-
-      .inline-fields{
-        flex-direction:column;
-      }
-
-      .inline-fields input,
-      .advanced__content input[type="url"]{
-        min-width:0;
-        width:100%;
-      }
-
-      .actions{
-        flex-direction:column;
-      }
-
-      .btn{
-        width:100%;
       }
 
       .player-shell{
@@ -645,9 +435,7 @@
           <div class="dropzone__icon">🎮</div>
           <div class="dropzone__text">
             <h2>Arraste ou clique para carregar</h2>
-            <p>
-              Use o arquivo baixado e carregue normalmente no emulador.
-            </p>
+            <p>Use o arquivo baixado e carregue normalmente no emulador.</p>
             <span class="dropzone__hint">.zip, .cue, .bin e outros formatos compatíveis</span>
           </div>
         </label>
@@ -703,7 +491,7 @@
         </div>
 
         <p class="notice" id="noticeBox">
-          Caso tenha problemas com o .zip teste pelo .cue
+          Se o .zip não funcionar vá até a página de downloads e baixe o outro arquivo .cue
         </p>
       </div>
     </section>
