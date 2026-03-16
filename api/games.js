@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   try {
 
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/game_downloads?select=title,zip_url,cue_url,status,display_order,is_visible&is_visible=eq.true&order=display_order.asc`,
+      `${SUPABASE_URL}/rest/v1/game_downloads?select=title,zip_url,cue_url,status,platform,display_order,is_visible&is_visible=eq.true&order=display_order.asc`,
       {
         headers: {
           apikey: SUPABASE_KEY,
