@@ -262,7 +262,7 @@
 
     setSelectionText("Nenhum jogo selecionado.");
     elements.playerHelperText.textContent = "Preferência: extraia o jogo e use o arquivo .cue.";
-    elements.noticeBox.innerHTML = "Se o .zip não funcionar vá até a página de downloads e baixe o outro arquivo .cue";
+    elements.noticeBox.innerHTML = "Se o .zip não funcionar, baixe e use o arquivo .cue.";
     setStep("drag");
     updateButtons();
   }
