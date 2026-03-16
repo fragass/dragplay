@@ -76,6 +76,12 @@
       background:rgba(255,255,255,.05);
     }
 
+    #gamesContainer{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
     .game{
       display:flex;
       flex-direction:column;
@@ -222,6 +228,10 @@
       .btn{
         width:100%;
       }
+
+      #gamesContainer{
+        gap:12px;
+      }
     }
   </style>
 </head>
@@ -243,92 +253,72 @@
   </span>
 
   <script>
-  const gamesContainer = document.getElementById("gamesContainer")
+    const gamesContainer = document.getElementById("gamesContainer")
 
-function escapeHtml(text){
-  return String(text || "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-}
-
-function getStatusClass(status){
-
-  if(status === "offline") return "status-offline"
-  if(status === "maintenance") return "status-maintenance"
-
-  return "status-online"
-
-}
-
-function buildButton(url,text,extra=""){
-
-  if(!url){
-    return `<span class="btn ${extra} btn--disabled">${text}</span>`
-  }
-
-  return `<a class="btn ${extra}" href="${url}">${text}</a>`
-
-}
-
-function renderGames(games){
-
-  if(!games.length){
-
-    gamesContainer.innerHTML = `<div class="empty">Nenhum jogo disponível.</div>`
-    return
-
-  }
-
-  gamesContainer.innerHTML = games.map(game=>{
-
-    const statusClass = getStatusClass(game.status)
-
-    return `
-      <div class="game">
-
-        <h2 class="game-title">
-          <span class="status-dot ${statusClass}"></span>
-          ${escapeHtml(game.title)}
-        </h2>
-
-        <div class="options">
-          ${buildButton(game.zip_url,"Download .zip")}
-          ${buildButton(game.cue_url,"Download .cue","btn--ghost")}
-        </div>
-
-        <div class="meta">Google Drive</div>
-
-      </div>
-    `
-
-  }).join("")
-
-}
-
-async function loadGames(){
-
-  try{
-
-    const res = await fetch("/api/games")
-
-    if(!res.ok){
-      throw new Error("API error")
+    function escapeHtml(text){
+      return String(text || "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
     }
 
-    const data = await res.json()
+    function getStatusClass(status){
+      if(status === "offline") return "status-offline"
+      if(status === "maintenance") return "status-maintenance"
+      return "status-online"
+    }
 
-    renderGames(data)
+    function buildButton(url,text,extra=""){
+      if(!url){
+        return `<span class="btn ${extra} btn--disabled">${text}</span>`
+      }
 
-  }catch(err){
+      return `<a class="btn ${extra}" href="${url}">${text}</a>`
+    }
 
-    gamesContainer.innerHTML = `<div class="error">Erro ao carregar jogos</div>`
+    function renderGames(games){
+      if(!games.length){
+        gamesContainer.innerHTML = `<div class="empty">Nenhum jogo disponível.</div>`
+        return
+      }
 
-  }
+      gamesContainer.innerHTML = games.map(game=>{
+        const statusClass = getStatusClass(game.status)
 
-}
+        return `
+          <div class="game">
+            <h2 class="game-title">
+              <span class="status-dot ${statusClass}"></span>
+              ${escapeHtml(game.title)}
+            </h2>
 
-loadGames()
+            <div class="options">
+              ${buildButton(game.zip_url,"Download .zip")}
+              ${buildButton(game.cue_url,"Download .cue","btn--ghost")}
+            </div>
+
+            <div class="meta">Google Drive</div>
+          </div>
+        `
+      }).join("")
+    }
+
+    async function loadGames(){
+      try{
+        const res = await fetch("/api/games")
+
+        if(!res.ok){
+          throw new Error("API error")
+        }
+
+        const data = await res.json()
+        renderGames(data)
+      }catch(err){
+        gamesContainer.innerHTML = `<div class="error">Erro ao carregar jogos</div>`
+      }
+    }
+
+    loadGames()
   </script>
 </body>
 </html>
