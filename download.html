@@ -243,89 +243,92 @@
   </span>
 
   <script>
-    const SUPABASE_URL = "YOUR_SUPABASE_URL";
-    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+  const gamesContainer = document.getElementById("gamesContainer")
 
-    const gamesContainer = document.getElementById("gamesContainer");
+function escapeHtml(text){
+  return String(text || "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+}
 
-    function escapeHtml(text) {
-      return String(text || "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+function getStatusClass(status){
+
+  if(status === "offline") return "status-offline"
+  if(status === "maintenance") return "status-maintenance"
+
+  return "status-online"
+
+}
+
+function buildButton(url,text,extra=""){
+
+  if(!url){
+    return `<span class="btn ${extra} btn--disabled">${text}</span>`
+  }
+
+  return `<a class="btn ${extra}" href="${url}">${text}</a>`
+
+}
+
+function renderGames(games){
+
+  if(!games.length){
+
+    gamesContainer.innerHTML = `<div class="empty">Nenhum jogo disponível.</div>`
+    return
+
+  }
+
+  gamesContainer.innerHTML = games.map(game=>{
+
+    const statusClass = getStatusClass(game.status)
+
+    return `
+      <div class="game">
+
+        <h2 class="game-title">
+          <span class="status-dot ${statusClass}"></span>
+          ${escapeHtml(game.title)}
+        </h2>
+
+        <div class="options">
+          ${buildButton(game.zip_url,"Download .zip")}
+          ${buildButton(game.cue_url,"Download .cue","btn--ghost")}
+        </div>
+
+        <div class="meta">Google Drive</div>
+
+      </div>
+    `
+
+  }).join("")
+
+}
+
+async function loadGames(){
+
+  try{
+
+    const res = await fetch("/api/games")
+
+    if(!res.ok){
+      throw new Error("API error")
     }
 
-    function getStatusClass(status) {
-      if (status === "offline") return "status-offline";
-      if (status === "maintenance") return "status-maintenance";
-      return "status-online";
-    }
+    const data = await res.json()
 
-    function buildButton(url, text, extraClass = "") {
-      if (!url) {
-        return `<span class="btn ${extraClass} btn--disabled">${text}</span>`;
-      }
+    renderGames(data)
 
-      return `<a class="btn ${extraClass}" href="${url}" target="_self">${text}</a>`;
-    }
+  }catch(err){
 
-    function renderGames(games) {
-      if (!Array.isArray(games) || !games.length) {
-        gamesContainer.innerHTML = `<div class="empty">Nenhum jogo disponível no momento.</div>`;
-        return;
-      }
+    gamesContainer.innerHTML = `<div class="error">Erro ao carregar jogos</div>`
 
-      gamesContainer.innerHTML = games.map(game => {
-        const statusClass = getStatusClass(game.status);
+  }
 
-        return `
-          <div class="game">
-            <h2 class="game-title">
-              <span class="status-dot ${statusClass}"></span>
-              ${escapeHtml(game.title)}
-            </h2>
+}
 
-            <div class="options">
-              ${buildButton(game.zip_url, "Download .zip")}
-              ${buildButton(game.cue_url, "Download .cue", "btn--ghost")}
-            </div>
-
-            <div class="meta">Google Drive</div>
-          </div>
-        `;
-      }).join("");
-    }
-
-    async function loadGames() {
-      try {
-        const response = await fetch(
-          `${SUPABASE_URL}/rest/v1/game_downloads?select=title,zip_url,cue_url,status,display_order,is_visible&is_visible=eq.true&order=display_order.asc,title.asc`,
-          {
-            method: "GET",
-            headers: {
-              "apikey": SUPABASE_ANON_KEY,
-              "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-              "Content-Type": "application/json"
-            }
-          }
-        );
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(errorText || "Erro ao carregar jogos");
-        }
-
-        const data = await response.json();
-        renderGames(data);
-      } catch (error) {
-        console.error(error);
-        gamesContainer.innerHTML = `<div class="error">Erro ao carregar os jogos.</div>`;
-      }
-    }
-
-    loadGames();
+loadGames()
   </script>
 </body>
 </html>
