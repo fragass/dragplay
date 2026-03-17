@@ -37,7 +37,7 @@ module.exports = async function handler(req, res) {
     }
 
     const { data, error } = await supabaseAnon
-      .from("users")
+      .from("pusers")
       .select("username, password, is_admin")
       .eq("username", username)
       .maybeSingle();
