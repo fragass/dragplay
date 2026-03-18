@@ -17,10 +17,9 @@
 
   const state = {
     romFile: null,
-    biosFile: null,
-    selectedSystem: null,
     objectUrls: [],
-    loaderScript: null
+    loaderScript: null,
+    gamesCatalog: []
   };
 
   function addObjectUrl(url) {
@@ -43,52 +42,57 @@
     return parts.length > 1 ? parts.pop() : "";
   }
 
-  function getLastPlatformFromFlow() {
-    const source = sessionStorage.getItem("dragplay_flow_source");
-    const platform = sessionStorage.getItem("dragplay_last_platform");
+  function stripKnownExtensions(name) {
+    return String(name || "")
+      .replace(/\.(zip|7z|cue|bin|chd|pbp|m3u|ccd|img|mdf|toc|cbn|z64|n64|v64)$/gi, "")
+      .trim();
+  }
 
-    if (source === "downloads" && platform && config.SYSTEMS?.[platform]) {
-      return platform;
-    }
+  function normalizeText(value) {
+    return String(value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/\.[a-z0-9]+$/g, "")
+      .replace(/[_\-:.,()[\]{}]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function tokenize(value) {
+    return normalizeText(value)
+      .split(" ")
+      .map(part => part.trim())
+      .filter(part => part && part.length > 1);
+  }
+
+  function normalizeStoredPlatform(value) {
+    const clean = String(value || "").trim().toLowerCase();
+
+    if (clean === "n64" || clean === "nintendo 64") return "n64";
+    if (clean === "psx" || clean === "ps1" || clean === "playstation") return "psx";
 
     return null;
   }
 
-  function detectSystemFromFileName(fileName) {
-    const name = String(fileName || "").toLowerCase();
-
-    const systems = config.SYSTEMS || {};
-    for (const [systemKey, systemData] of Object.entries(systems)) {
-      const archiveHints = Array.isArray(systemData.archiveHints) ? systemData.archiveHints : [];
-      for (const hint of archiveHints) {
-        if (name.endsWith(hint)) {
-          return { system: systemKey };
-        }
-      }
-    }
-
-    const ext = getExtensionFromName(name);
-    for (const [systemKey, systemData] of Object.entries(systems)) {
-      const exts = Array.isArray(systemData.extensions) ? systemData.extensions : [];
-      if (exts.includes(ext)) {
-        return { system: systemKey };
-      }
-    }
-
-    if (ext === "zip" || ext === "7z") {
-      const flowPlatform = getLastPlatformFromFlow();
-      if (flowPlatform) {
-        return { system: flowPlatform };
-      }
-
-      return { system: "psx" };
-    }
-
-    return { system: null };
+  function clearFlowSelection() {
+    sessionStorage.removeItem("dragplay_last_platform");
+    sessionStorage.removeItem("dragplay_last_title");
+    sessionStorage.removeItem("dragplay_flow_source");
   }
 
-  function setNotice(text) {
-    if (noticeBox) noticeBox.textContent = text;
+  function getLastFlowSelection() {
+    const source = sessionStorage.getItem("dragplay_flow_source");
+    const platform = normalizeStoredPlatform(sessionStorage.getItem("dragplay_last_platform"));
+    const title = String(sessionStorage.getItem("dragplay_last_title") || "").trim();
+
+    if (source !== "downloads" || !platform) return null;
+
+    return {
+      source,
+      platform,
+      title
+    };
   }
 
   function getSystemLabel(systemKey) {
@@ -96,8 +100,12 @@
   }
 
   function getGameTitle(fileName) {
-    const clean = String(fileName || "Jogo").replace(/\.(zip|7z|cue|bin|chd|pbp|m3u|ccd|img|mdf|toc|cbn|z64|n64|v64)$/i, "");
+    const clean = stripKnownExtensions(fileName || "Jogo");
     return clean || "Jogo";
+  }
+
+  function setNotice(text) {
+    if (noticeBox) noticeBox.textContent = text;
   }
 
   function resetEmbeddedGame() {
@@ -120,8 +128,104 @@
     delete window.EJS_startOnLoaded;
   }
 
-  function hardResetPage() {
-    window.location.reload();
+  async function loadGamesCatalog() {
+    try {
+      const res = await fetch("/api/games");
+      if (!res.ok) return;
+
+      const data = await res.json();
+      if (!Array.isArray(data)) return;
+
+      state.gamesCatalog = data.map(game => ({
+        title: String(game?.title || "").trim(),
+        platform: normalizeStoredPlatform(game?.platform) || "psx"
+      }));
+    } catch {}
+  }
+
+  function detectSystemByCatalog(fileName) {
+    const normalizedFile = normalizeText(stripKnownExtensions(fileName));
+    if (!normalizedFile || !state.gamesCatalog.length) return null;
+
+    const fileTokens = tokenize(normalizedFile);
+    let bestMatch = null;
+    let bestScore = 0;
+
+    for (const game of state.gamesCatalog) {
+      const normalizedTitle = normalizeText(game.title);
+      if (!normalizedTitle) continue;
+
+      let score = 0;
+      const titleTokens = tokenize(normalizedTitle);
+
+      if (normalizedFile === normalizedTitle) score += 100;
+      if (normalizedFile.includes(normalizedTitle)) score += 50;
+      if (normalizedTitle.includes(normalizedFile)) score += 40;
+
+      let overlap = 0;
+      for (const token of titleTokens) {
+        if (fileTokens.includes(token)) overlap += 1;
+      }
+      score += overlap * 10;
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestMatch = game;
+      }
+    }
+
+    if (bestMatch && bestScore >= 20) {
+      return bestMatch.platform;
+    }
+
+    return null;
+  }
+
+  function detectSystemFromFileName(fileName) {
+    const name = String(fileName || "").toLowerCase();
+    const ext = getExtensionFromName(name);
+    const systems = config.SYSTEMS || {};
+
+    for (const [systemKey, systemData] of Object.entries(systems)) {
+      const archiveHints = Array.isArray(systemData.archiveHints) ? systemData.archiveHints : [];
+      for (const hint of archiveHints) {
+        if (name.endsWith(hint)) {
+          return systemKey;
+        }
+      }
+    }
+
+    for (const [systemKey, systemData] of Object.entries(systems)) {
+      const exts = Array.isArray(systemData.extensions) ? systemData.extensions : [];
+      if (exts.includes(ext)) {
+        return systemKey;
+      }
+    }
+
+    const catalogMatch = detectSystemByCatalog(fileName);
+    if (catalogMatch) {
+      return catalogMatch;
+    }
+
+    if (ext === "zip" || ext === "7z") {
+      const flowSelection = getLastFlowSelection();
+      if (flowSelection) {
+        const normalizedFlowTitle = normalizeText(flowSelection.title);
+        const normalizedFile = normalizeText(stripKnownExtensions(fileName));
+
+        if (
+          normalizedFlowTitle &&
+          normalizedFile &&
+          (normalizedFile.includes(normalizedFlowTitle) || normalizedFlowTitle.includes(normalizedFile))
+        ) {
+          return flowSelection.platform;
+        }
+      }
+
+      return "psx";
+    }
+
+    return null;
   }
 
   function launchGame({ romFile, systemKey }) {
@@ -169,7 +273,7 @@
     playerHelperText.textContent = `Core carregado: ${getSystemLabel(systemKey)}.`;
 
     setNotice(
-      "O emulador foi ajustado para funcionar com jogos em .zip testados dentro do fluxo do site. Arquivos externos ou fora desse fluxo podem não funcionar corretamente."
+      "Para o sistema reconhecer o core correto, baixe a ROM pela página Downloads. Arquivos externos podem não funcionar adequadamente. Se o .zip não funcionar, teste o .cue ou .z64."
     );
   }
 
@@ -178,20 +282,21 @@
 
     state.romFile = file;
 
-    const detection = detectSystemFromFileName(file.name);
-    if (!detection.system) {
-      setNotice("Formato não reconhecido. Use jogos .zip/.cue do fluxo do site ou formatos compatíveis de PS1 e Nintendo 64.");
+    const detectedSystem = detectSystemFromFileName(file.name);
+    if (!detectedSystem) {
+      setNotice("Formato não reconhecido. Use jogos .zip/.cue/.z64 do fluxo do site ou formatos compatíveis de PS1 e Nintendo 64.");
       return;
     }
 
-    state.selectedSystem = detection.system;
+    launchGame({
+      romFile: state.romFile,
+      systemKey: detectedSystem
+    });
+  }
 
-    if (autostartToggle?.checked ?? config.AUTO_START ?? true) {
-      launchGame({
-        romFile: state.romFile,
-        systemKey: state.selectedSystem
-      });
-    }
+  function hardResetPage() {
+    clearFlowSelection();
+    window.location.reload();
   }
 
   if (dropZone && romFileInput) {
@@ -221,4 +326,6 @@
   window.addEventListener("beforeunload", () => {
     cleanupObjectUrls();
   });
+
+  loadGamesCatalog();
 })();
