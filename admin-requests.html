@@ -144,21 +144,6 @@
       background:rgba(255,179,71,.12);
       border-color:rgba(255,179,71,.22);
     }
-    .badge--approved{
-      color:#baf7c7;
-      background:rgba(60,255,92,.10);
-      border-color:rgba(60,255,92,.20);
-    }
-    .badge--rejected{
-      color:#ffb8b8;
-      background:rgba(255,77,77,.10);
-      border-color:rgba(255,77,77,.20);
-    }
-    .badge--pendinginfo{
-      color:#ffe1ab;
-      background:rgba(255,179,71,.10);
-      border-color:rgba(255,179,71,.20);
-    }
     .request-info{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
@@ -211,15 +196,6 @@
     }
     .btn--primary:hover{
       background:#7c1cff;
-    }
-    .btn--ghost{
-      background:transparent;
-      color:#c4c4c4;
-      border:1px solid rgba(255,255,255,.08);
-    }
-    .btn--ghost:hover{
-      background:rgba(255,255,255,.04);
-      color:#fff;
     }
     .field{
       display:flex;
@@ -298,7 +274,7 @@
     <section class="card">
       <a class="back" href="./reyalp.html">Voltar</a>
       <h1 class="title">Painel de Tickets</h1>
-      <p class="subtitle">Visualize e responda as solicitações dos usuários.</p>
+      <p class="subtitle">Visualize e responda as solicitações pendentes.</p>
       <div id="contentArea">
         <div class="loading">Carregando tickets...</div>
       </div>
@@ -344,22 +320,6 @@
       }
     }
 
-    function formatStatus(status){
-      const value = String(status || "pending").toLowerCase();
-      if (value === "approved") return "Aprovado";
-      if (value === "rejected") return "Reprovado";
-      if (value === "pending_info") return "Análise pendente";
-      return "Pendente";
-    }
-
-    function statusBadgeClass(status){
-      const value = String(status || "pending").toLowerCase();
-      if (value === "approved") return "badge--approved";
-      if (value === "rejected") return "badge--rejected";
-      if (value === "pending_info") return "badge--pendinginfo";
-      return "badge--pending";
-    }
-
     async function loadTickets(){
       if (!loggedUser) {
         contentArea.innerHTML = `<div class="error">Usuário não encontrado na sessão.</div>`;
@@ -377,7 +337,7 @@
         const requests = Array.isArray(data.requests) ? data.requests : [];
 
         if (!requests.length) {
-          contentArea.innerHTML = `<div class="empty">Nenhuma solicitação encontrada.</div>`;
+          contentArea.innerHTML = `<div class="empty">Nenhum ticket pendente no momento.</div>`;
           return;
         }
 
@@ -393,9 +353,7 @@
                       ${escapeHtml(formatCore(item.core))}
                     </span>
 
-                    <span class="badge ${statusBadgeClass(item.status)}">
-                      ${escapeHtml(formatStatus(item.status))}
-                    </span>
+                    <span class="badge badge--pending">Pendente</span>
                   </div>
                 </div>
 
@@ -411,13 +369,13 @@
                   </div>
 
                   <div class="request-block" style="grid-column:1 / -1;">
-                    <span class="request-label">Observação do usuário</span>
+                    <span class="request-label">Observação inicial</span>
                     <span class="request-value">${escapeHtml(item.notes || "Sem observações")}</span>
                   </div>
 
                   <div class="request-block" style="grid-column:1 / -1;">
-                    <span class="request-label">Resposta atual</span>
-                    <span class="request-value">${escapeHtml(item.admin_reply || "Sem resposta ainda")}</span>
+                    <span class="request-label">Complemento do usuário</span>
+                    <span class="request-value">${escapeHtml(item.user_followup || "Sem complemento enviado")}</span>
                   </div>
                 </div>
 
@@ -425,15 +383,15 @@
                   <div class="field">
                     <label>Status da resposta</label>
                     <select class="reply-status">
-                      <option value="approved" ${item.status === "approved" ? "selected" : ""}>Aprovado</option>
-                      <option value="rejected" ${item.status === "rejected" ? "selected" : ""}>Reprovado</option>
-                      <option value="pending_info" ${item.status === "pending_info" ? "selected" : ""}>Análise pendente</option>
+                      <option value="approved">Aprovado</option>
+                      <option value="rejected">Reprovado</option>
+                      <option value="pending_info">Análise pendente</option>
                     </select>
                   </div>
 
                   <div class="field">
                     <label>Resposta do admin</label>
-                    <textarea class="reply-text" maxlength="1000" placeholder="Digite a resposta para o usuário...">${escapeHtml(item.admin_reply || "")}</textarea>
+                    <textarea class="reply-text" maxlength="1000" placeholder="Digite a resposta para o usuário..."></textarea>
                   </div>
 
                   <div class="reply-actions">
