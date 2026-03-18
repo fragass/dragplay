@@ -1,35 +1,45 @@
-export default async function handler(req, res) {
-
-  const SUPABASE_URL = process.env.SUPABASE_URL
-  const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY
-
-  try {
-
-    const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/game_downloads?select=title,zip_url,cue_url,status,platform,display_order,is_visible&is_visible=eq.true&order=display_order.asc`,
-      {
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-          "Content-Type": "application/json"
-        }
-      }
-    )
-
-    if (!response.ok) {
-      throw new Error("Supabase request failed")
-    }
-
-    const data = await response.json()
-
-    res.status(200).json(data)
-
-  } catch (err) {
-
-    res.status(500).json({
-      error: "Failed to load games"
-    })
-
+module.exports = async function handler(req, res) {
+  if (req.method !== "GET") {
+    return res.status(405).json({
+      success: false,
+      message: "Método não permitido"
+    });
   }
 
-}
+  const SUPABASE_URL = process.env.SUPABASE_URL;
+  const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    return res.status(500).json({
+      success: false,
+      message: "Supabase não configurado"
+    });
+  }
+
+  try {
+    const { createClient } = require("@supabase/supabase-js");
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const { data, error } = await supabase
+      .from("game_downloads")
+      .select("id, title, zip_url, cue_url, status, platform, is_visible, display_order, download_count")
+      .eq("is_visible", true)
+      .order("display_order", { ascending: true })
+      .order("title", { ascending: true });
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        message: error.message || "Erro ao carregar jogos"
+      });
+    }
+
+    return res.status(200).json(Array.isArray(data) ? data : []);
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err?.message || "Erro interno"
+    });
+  }
+};
