@@ -37,7 +37,8 @@
     }
 
     button,
-    input{
+    input,
+    select{
       font:inherit;
     }
 
@@ -206,6 +207,38 @@
       color:#707070;
       line-height:1.5;
       width:100%;
+    }
+
+    .system-row{
+      display:none;
+      width:100%;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .system-row.is-visible{
+      display:flex;
+    }
+
+    .system-label{
+      font-size:12px;
+      color:#8b8b8b;
+    }
+
+    .system-select{
+      height:40px;
+      min-width:180px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,.08);
+      background:#0d0d12;
+      color:#e6e6e6;
+      padding:0 12px;
+      outline:none;
+    }
+
+    .system-select:focus{
+      border-color:rgba(106,0,255,.65);
     }
 
     .player-shell{
@@ -522,28 +555,11 @@
         <p class="eyebrow">PlayStation / EmulatorJS</p>
         <h1>Drag <span>•</span> Wait <span>•</span> Play</h1>
         <p class="lead">
-          Fluxo simples pra baixar o jogo, extrair e rodar no navegador. Para PS1,
-          o caminho mais seguro é extrair o pacote e arrastar o arquivo <strong>.cue</strong>.
+          Fluxo simples pra baixar o jogo, extrair e rodar no navegador.
         </p>
       </div>
 
-      <div class="status-rail" aria-label="Fluxo de carregamento">
-        <div class="status-card is-active" data-step-card="drag">
-          <strong>01</strong>
-          <span>Drag</span>
-          <small>arraste o .cue</small>
-        </div>
-        <div class="status-card" data-step-card="wait">
-          <strong>02</strong>
-          <span>Wait</span>
-          <small>preparando o disco</small>
-        </div>
-        <div class="status-card" data-step-card="play">
-          <strong>03</strong>
-          <span>Play</span>
-          <small>emulador liberado</small>
-        </div>
-      </div>
+      <div class="status-rail" aria-label="Fluxo de carregamento"></div>
 
       <div class="panel">
         <div class="top-actions">
@@ -551,10 +567,7 @@
           <button class="tutorial-top" id="openTutorialBtn" type="button">Tutorial</button>
         </div>
 
-        <div class="tip-box">
-          <strong>Melhor forma para PS1</strong>
-          <p>Baixe o jogo na página <a href="./download.html">download</a>, extraia o pacote e arraste o arquivo <code>.cue</code>. O <code>.bin</code> precisa ficar na mesma pasta.</p>
-        </div>
+        <div class="tip-box"></div>
 
         <label
           id="dropZone"
@@ -566,14 +579,14 @@
           <input
             id="romFileInput"
             type="file"
-            accept=".cue,.chd,.pbp,.m3u,.ccd,.zip,.7z,.bin,.img,.mdf,.toc,.cbn"
+            accept=".cue,.chd,.pbp,.m3u,.ccd,.zip,.7z,.bin,.img,.mdf,.toc,.cbn,.z64,.n64,.v64"
             hidden
           />
           <div class="dropzone__icon">🎮</div>
           <div class="dropzone__text">
             <h2>Arraste ou clique para carregar</h2>
-            <p>Use o arquivo baixado e carregue normalmente no emulador.</p>
-            <span class="dropzone__hint">.zip, .cue, .bin e outros formatos compatíveis</span>
+            <p>PS1 e Nintendo 64.</p>
+            <span class="dropzone__hint">.zip, .cue, .bin, .z64, .n64, .v64</span>
           </div>
         </label>
 
@@ -590,9 +603,7 @@
             />
             <button id="loadRemoteBtn" class="btn btn--primary" type="button">Carregar</button>
           </div>
-          <p class="subtle">
-            Também funciona com URL remota, mantendo a lógica original.
-          </p>
+          <p class="subtle">Também funciona com URL remota.</p>
         </div>
 
         <details class="advanced">
@@ -627,8 +638,17 @@
           <button id="resetBtn" class="btn btn--ghost" type="button">Reset</button>
         </div>
 
+        <div id="systemRow" class="system-row">
+          <span class="system-label">Arquivo compactado ambíguo:</span>
+          <select id="systemSelect" class="system-select">
+            <option value="psx">PlayStation</option>
+            <option value="n64">Nintendo 64</option>
+          </select>
+          <button id="systemStartBtn" class="btn btn--primary" type="button">Iniciar</button>
+        </div>
+
         <p class="notice" id="noticeBox">
-         Se o .zip não funcionar, baixe e use o arquivo .cue.
+          PS1: se o .zip não funcionar, baixe e use o arquivo .cue. N64: prefira .z64, .n64 ou .v64.
         </p>
       </div>
     </section>
@@ -636,8 +656,8 @@
     <section class="player-shell hidden" id="playerShell">
       <div class="player-topbar">
         <div>
-          <p class="eyebrow">Em execução</p>
-          <h2 id="gameTitle">RE2: DUALSHOCK</h2>
+          <p class="eyebrow" id="runningSystem">Em execução</p>
+          <h2 id="gameTitle">Jogo</h2>
         </div>
         <button id="backBtn" class="btn btn--ghost" type="button">Voltar</button>
       </div>
@@ -675,7 +695,6 @@
 
   <script>
     const tutorialOverlay = document.getElementById("tutorialOverlay");
-    const tutorialModal = document.getElementById("tutorialModal");
     const openTutorialBtn = document.getElementById("openTutorialBtn");
     const closeTutorialBtn = document.getElementById("closeTutorialBtn");
     const tutorialVideo = document.getElementById("tutorialVideo");
