@@ -1,5 +1,5 @@
 module.exports = async function handler(req, res) {
-  if (req.method !== "GET") {
+  if (req.method !== "POST") {
     return res.status(405).json({
       success: false,
       message: "Método não permitido"
@@ -20,7 +20,7 @@ module.exports = async function handler(req, res) {
     const { createClient } = require("@supabase/supabase-js");
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const username = String(req.query?.username || "").trim();
+    const username = String(req.body?.username || "").trim();
 
     if (!username) {
       return res.status(400).json({
@@ -29,9 +29,9 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("game_requests")
-      .select("id")
+      .update({ user_seen_reply: true })
       .eq("requester_name", username)
       .eq("user_seen_reply", false)
       .not("admin_reply", "is", null);
@@ -39,13 +39,12 @@ module.exports = async function handler(req, res) {
     if (error) {
       return res.status(500).json({
         success: false,
-        message: error.message || "Erro ao contar respostas"
+        message: error.message || "Erro ao marcar como visto"
       });
     }
 
     return res.status(200).json({
-      success: true,
-      unread_count: Array.isArray(data) ? data.length : 0
+      success: true
     });
   } catch (err) {
     return res.status(500).json({
