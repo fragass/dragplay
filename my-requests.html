@@ -9,7 +9,7 @@
   <link rel="icon" href="favicon.png" type="image/png">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Página Inicial - Workday</title>
+  <title>Meus Tickets - Workday</title>
   <meta name="theme-color" content="#0a0a0f" />
 
   <style>
@@ -337,6 +337,22 @@
       return "badge--pending";
     }
 
+    async function markRepliesAsSeen() {
+      if (!loggedUser) return;
+
+      try {
+        await fetch("/api/my-requests-mark-seen", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            username: loggedUser
+          })
+        });
+      } catch {}
+    }
+
     async function loadMyTickets(){
       if (!loggedUser) {
         contentArea.innerHTML = `<div class="error">Usuário não encontrado na sessão.</div>`;
@@ -344,6 +360,8 @@
       }
 
       try{
+        await markRepliesAsSeen();
+
         const response = await fetch(`/api/my-requests?username=${encodeURIComponent(loggedUser)}`);
         const data = await response.json();
 
