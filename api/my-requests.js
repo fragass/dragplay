@@ -31,7 +31,7 @@ module.exports = async function handler(req, res) {
 
     const { data, error } = await supabase
       .from("game_requests")
-      .select("id, requester_name, game_title, core, notes, status, admin_reply, reviewed_by, reviewed_at, created_at")
+      .select("id, requester_name, game_title, core, notes, user_followup, status, admin_reply, reviewed_by, reviewed_at, created_at")
       .eq("requester_name", username)
       .order("created_at", { ascending: false });
 
