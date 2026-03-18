@@ -437,12 +437,37 @@
       transition:.15s;
     }
 
-    .field input:focus,
-    .field select:focus,
-    .field textarea:focus{
-      border-color:rgba(106,0,255,.65);
-      background:#0f0f16;
-    }
+.field input,
+.field textarea{
+  width:100%;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.08);
+  background:#0d0d12;
+  color:#e6e6e6;
+  padding:12px 14px;
+  outline:none;
+  transition:.15s;
+}
+
+.field select{
+  width:100%;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.08);
+  background:#0d0d12;
+  color:#e6e6e6;
+  padding:12px 38px 12px 14px;
+  outline:none;
+  transition:.15s;
+
+  appearance:none;
+  -webkit-appearance:none;
+  -moz-appearance:none;
+
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20'%3E%3Cpath fill='%23b8b8b8' d='M5 7l5 6 5-6z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 14px center;
+  background-size:12px;
+}
 
     .field textarea{
   height:90px;
