@@ -6,7 +6,7 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({
       success: false,
       message: "Supabase não configurado"
-    });h
+    });
   }
 
   try {
@@ -27,7 +27,7 @@ module.exports = async function handler(req, res) {
 
     const { data: adminUser, error: adminError } = await supabase
       .from("pusers")
-      .select("username, is_admin")
+      .select("username, its_admin")
       .eq("username", username)
       .maybeSingle();
 
@@ -38,7 +38,7 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    if (!adminUser?.is_admin) {
+    if (!adminUser?.its_admin) {
       return res.status(403).json({
         success: false,
         message: "Acesso negado"
@@ -48,7 +48,7 @@ module.exports = async function handler(req, res) {
     if (req.method === "GET") {
       const { data, error } = await supabase
         .from("game_requests")
-        .select("id, requester_name, game_title, core, notes, status, created_at")
+        .select("id, requester_name, game_title, core, notes, status, admin_reply, reviewed_by, reviewed_at, created_at")
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -61,6 +61,56 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({
         success: true,
         requests: Array.isArray(data) ? data : []
+      });
+    }
+
+    if (req.method === "POST") {
+      const body = req.body || {};
+      const requestId = Number(body.request_id);
+      const status = String(body.status || "").trim().toLowerCase();
+      const adminReply = String(body.admin_reply || "").trim();
+
+      if (!Number.isInteger(requestId) || requestId <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Ticket inválido"
+        });
+      }
+
+      if (!["approved", "rejected", "pending_info"].includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: "Status inválido"
+        });
+      }
+
+      if (!adminReply) {
+        return res.status(400).json({
+          success: false,
+          message: "Informe a resposta do admin"
+        });
+      }
+
+      const { error } = await supabase
+        .from("game_requests")
+        .update({
+          status,
+          admin_reply: adminReply,
+          reviewed_by: username,
+          reviewed_at: new Date().toISOString()
+        })
+        .eq("id", requestId);
+
+      if (error) {
+        return res.status(500).json({
+          success: false,
+          message: error.message || "Erro ao responder ticket"
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Ticket respondido com sucesso"
       });
     }
 
