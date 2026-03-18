@@ -15,10 +15,6 @@
   const playerHelperText = document.getElementById("playerHelperText");
   const noticeBox = document.getElementById("noticeBox");
 
-  const systemRow = document.getElementById("systemRow");
-  const systemSelect = document.getElementById("systemSelect");
-  const systemStartBtn = document.getElementById("systemStartBtn");
-
   const state = {
     romFile: null,
     biosFile: null,
@@ -41,14 +37,21 @@
     state.objectUrls = [];
   }
 
-  function getLowerFileName(file) {
-    return String(file?.name || "").trim().toLowerCase();
-  }
-
   function getExtensionFromName(name) {
     const clean = String(name || "").toLowerCase();
     const parts = clean.split(".");
     return parts.length > 1 ? parts.pop() : "";
+  }
+
+  function getLastPlatformFromFlow() {
+    const source = sessionStorage.getItem("dragplay_flow_source");
+    const platform = sessionStorage.getItem("dragplay_last_platform");
+
+    if (source === "downloads" && platform && config.SYSTEMS?.[platform]) {
+      return platform;
+    }
+
+    return null;
   }
 
   function detectSystemFromFileName(fileName) {
@@ -59,7 +62,7 @@
       const archiveHints = Array.isArray(systemData.archiveHints) ? systemData.archiveHints : [];
       for (const hint of archiveHints) {
         if (name.endsWith(hint)) {
-          return { system: systemKey, ambiguous: false };
+          return { system: systemKey };
         }
       }
     }
@@ -68,24 +71,24 @@
     for (const [systemKey, systemData] of Object.entries(systems)) {
       const exts = Array.isArray(systemData.extensions) ? systemData.extensions : [];
       if (exts.includes(ext)) {
-        return { system: systemKey, ambiguous: false };
+        return { system: systemKey };
       }
     }
 
     if (ext === "zip" || ext === "7z") {
-      return { system: null, ambiguous: true };
+      const flowPlatform = getLastPlatformFromFlow();
+      if (flowPlatform) {
+        return { system: flowPlatform };
+      }
+
+      return { system: "psx" };
     }
 
-    return { system: null, ambiguous: false };
+    return { system: null };
   }
 
   function setNotice(text) {
     if (noticeBox) noticeBox.textContent = text;
-  }
-
-  function showSystemChooser(show) {
-    if (!systemRow) return;
-    systemRow.classList.toggle("is-visible", !!show);
   }
 
   function getSystemLabel(systemKey) {
@@ -166,9 +169,7 @@
     playerHelperText.textContent = `Core carregado: ${getSystemLabel(systemKey)}.`;
 
     setNotice(
-      systemKey === "psx"
-        ? "PS1 iniciado. Se um .zip falhar, tente o arquivo .cue."
-        : "Nintendo 64 iniciado."
+      "O emulador foi ajustado para funcionar com jogos em .zip testados dentro do fluxo do site. Arquivos externos ou fora desse fluxo podem não funcionar corretamente."
     );
   }
 
@@ -178,17 +179,8 @@
     state.romFile = file;
 
     const detection = detectSystemFromFileName(file.name);
-    if (detection.ambiguous) {
-      state.selectedSystem = systemSelect?.value || "psx";
-      showSystemChooser(true);
-      setNotice("Arquivo compactado ambíguo. Escolha PlayStation ou Nintendo 64 e clique em Iniciar.");
-      return;
-    }
-
-    showSystemChooser(false);
-
     if (!detection.system) {
-      setNotice("Formato não reconhecido. Use PS1 (.cue, .bin, .chd...) ou N64 (.z64, .n64, .v64).");
+      setNotice("Formato não reconhecido. Use jogos .zip/.cue do fluxo do site ou formatos compatíveis de PS1 e Nintendo 64.");
       return;
     }
 
@@ -219,29 +211,6 @@
     romFileInput.addEventListener("change", () => {
       const file = romFileInput.files?.[0];
       handleRomSelection(file);
-    });
-  }
-
-  if (systemSelect) {
-    systemSelect.addEventListener("change", () => {
-      state.selectedSystem = systemSelect.value;
-    });
-  }
-
-  if (systemStartBtn) {
-    systemStartBtn.addEventListener("click", () => {
-      if (!state.romFile) {
-        setNotice("Selecione um arquivo primeiro.");
-        return;
-      }
-
-      const selected = systemSelect?.value || "psx";
-      state.selectedSystem = selected;
-
-      launchGame({
-        romFile: state.romFile,
-        systemKey: state.selectedSystem
-      });
     });
   }
 
