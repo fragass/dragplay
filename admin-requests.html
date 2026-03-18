@@ -9,24 +9,17 @@
   <link rel="icon" href="favicon.png" type="image/png">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Painel de Solicitações - Workday</title>
+  <title>Painel de Tickets - Workday</title>
   <meta name="theme-color" content="#0a0a0f" />
 
   <style>
     *{box-sizing:border-box}
-
-    html,body{
-      margin:0;
-      width:100%;
-      min-height:100%;
-    }
-
+    html,body{margin:0;width:100%;min-height:100%}
     body{
       background:#0a0a0f;
       color:#e6e6e6;
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;
     }
-
     .bg{
       position:fixed;
       inset:0;
@@ -35,20 +28,17 @@
         #0a0a0f;
       pointer-events:none;
     }
-
     .shell{
       position:relative;
       min-height:100vh;
       display:flex;
-      align-items:flex-start;
       justify-content:center;
       padding:28px;
     }
-
     .card{
       position:relative;
       width:100%;
-      max-width:980px;
+      max-width:1000px;
       background:#111116;
       border:1px solid rgba(255,255,255,.06);
       border-radius:14px;
@@ -58,7 +48,6 @@
       gap:18px;
       box-shadow:0 12px 40px rgba(0,0,0,.35);
     }
-
     .back{
       position:absolute;
       top:16px;
@@ -70,28 +59,22 @@
       border-radius:6px;
       transition:.15s;
     }
-
     .back:hover{
       color:#fff;
       background:rgba(255,255,255,.05);
     }
-
     .title{
       margin:0;
       font-size:20px;
       font-weight:600;
       color:#f2f2f2;
     }
-
     .subtitle{
       margin:0;
       font-size:13px;
       color:#8d8d8d;
     }
-
-    .loading,
-    .error,
-    .empty{
+    .loading,.error,.empty{
       padding:14px;
       border:1px solid rgba(255,255,255,.06);
       border-radius:10px;
@@ -99,17 +82,12 @@
       font-size:13px;
       color:#8b8b8b;
     }
-
-    .error{
-      color:#ff9f9f;
-    }
-
+    .error{color:#ff9f9f}
     .requests{
       display:flex;
       flex-direction:column;
       gap:14px;
     }
-
     .request-card{
       border:1px solid rgba(255,255,255,.06);
       border-radius:12px;
@@ -117,9 +95,8 @@
       padding:14px;
       display:flex;
       flex-direction:column;
-      gap:10px;
+      gap:12px;
     }
-
     .request-top{
       display:flex;
       align-items:flex-start;
@@ -127,20 +104,17 @@
       gap:12px;
       flex-wrap:wrap;
     }
-
     .request-game{
       margin:0;
       font-size:15px;
       font-weight:600;
       color:#f2f2f2;
     }
-
     .request-meta{
       display:flex;
       flex-wrap:wrap;
       gap:8px;
     }
-
     .badge{
       display:inline-flex;
       align-items:center;
@@ -155,64 +129,165 @@
       background:rgba(255,255,255,.03);
       color:#d8d8d8;
     }
-
     .badge--psx{
       color:#d7d0ff;
       background:rgba(106,0,255,.14);
       border-color:rgba(106,0,255,.28);
     }
-
     .badge--n64{
       color:#bfe3ff;
       background:rgba(0,153,255,.12);
       border-color:rgba(0,153,255,.22);
     }
-
     .badge--pending{
       color:#ffd899;
       background:rgba(255,179,71,.12);
       border-color:rgba(255,179,71,.22);
     }
-
+    .badge--approved{
+      color:#baf7c7;
+      background:rgba(60,255,92,.10);
+      border-color:rgba(60,255,92,.20);
+    }
+    .badge--rejected{
+      color:#ffb8b8;
+      background:rgba(255,77,77,.10);
+      border-color:rgba(255,77,77,.20);
+    }
+    .badge--pendinginfo{
+      color:#ffe1ab;
+      background:rgba(255,179,71,.10);
+      border-color:rgba(255,179,71,.20);
+    }
     .request-info{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
       gap:10px;
     }
-
     .request-block{
       display:flex;
       flex-direction:column;
       gap:4px;
       min-width:0;
     }
-
     .request-label{
       font-size:11px;
       color:#8d8d8d;
       text-transform:uppercase;
       letter-spacing:.5px;
     }
-
     .request-value{
       font-size:13px;
       color:#e6e6e6;
       word-break:break-word;
       line-height:1.5;
     }
-
-    @media (max-width: 700px){
-      .shell{
-        padding:16px;
-      }
-
-      .card{
-        padding:52px 16px 16px;
-      }
-
-      .request-info{
-        grid-template-columns:1fr;
-      }
+    .reply-box{
+      border-top:1px solid rgba(255,255,255,.06);
+      padding-top:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .reply-actions{
+      display:flex;
+      justify-content:flex-end;
+    }
+    .btn{
+      height:40px;
+      padding:0 16px;
+      border-radius:8px;
+      border:none;
+      cursor:pointer;
+      transition:.15s;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:14px;
+    }
+    .btn--primary{
+      background:#6a00ff;
+      color:#fff;
+    }
+    .btn--primary:hover{
+      background:#7c1cff;
+    }
+    .btn--ghost{
+      background:transparent;
+      color:#c4c4c4;
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .btn--ghost:hover{
+      background:rgba(255,255,255,.04);
+      color:#fff;
+    }
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .field label{
+      font-size:12px;
+      color:#b8b8b8;
+    }
+    .field select,
+    .field textarea{
+      width:100%;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.08);
+      background:#0d0d12;
+      color:#e6e6e6;
+      padding:12px 14px;
+      outline:none;
+      transition:.15s;
+    }
+    .field select{
+      padding-right:38px;
+      appearance:none;
+      -webkit-appearance:none;
+      -moz-appearance:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20'%3E%3Cpath fill='%23b8b8b8' d='M5 7l5 6 5-6z'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;
+      background-position:right 14px center;
+      background-size:12px;
+    }
+    .field textarea{
+      height:90px;
+      resize:none;
+    }
+    .field select:focus,
+    .field textarea:focus{
+      border-color:rgba(106,0,255,.65);
+      background:#0f0f16;
+    }
+    .toast-wrap{
+      position:fixed;
+      right:16px;
+      bottom:16px;
+      z-index:10000;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      pointer-events:none;
+    }
+    .toast{
+      min-width:280px;
+      max-width:420px;
+      padding:14px 16px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.08);
+      background:#111116;
+      color:#e6e6e6;
+      box-shadow:0 18px 40px rgba(0,0,0,.35);
+    }
+    .toast--success{border-color:rgba(60,255,92,.18)}
+    .toast--error{border-color:rgba(255,77,77,.18)}
+    .toast-title{display:block;font-size:13px;font-weight:600;margin-bottom:4px}
+    .toast-text{display:block;font-size:12px;line-height:1.5;color:#b8b8b8}
+    @media (max-width:700px){
+      .shell{padding:16px}
+      .card{padding:52px 16px 16px}
+      .request-info{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -222,18 +297,19 @@
   <main class="shell">
     <section class="card">
       <a class="back" href="./reyalp.html">Voltar</a>
-
-      <h1 class="title">Painel de Solicitações</h1>
-      <p class="subtitle">Solicitações enviadas pelos usuários.</p>
-
+      <h1 class="title">Painel de Tickets</h1>
+      <p class="subtitle">Visualize e responda as solicitações dos usuários.</p>
       <div id="contentArea">
         <div class="loading">Carregando tickets...</div>
       </div>
     </section>
   </main>
 
+  <div class="toast-wrap" id="toastWrap"></div>
+
   <script>
     const contentArea = document.getElementById("contentArea");
+    const toastWrap = document.getElementById("toastWrap");
     const loggedUser = sessionStorage.getItem("loggedUser") || "";
 
     function escapeHtml(text){
@@ -245,9 +321,19 @@
         .replaceAll("'","&#039;");
     }
 
+    function showToast(type, title, text) {
+      const toast = document.createElement("div");
+      toast.className = `toast toast--${type}`;
+      toast.innerHTML = `
+        <span class="toast-title">${title}</span>
+        <span class="toast-text">${text}</span>
+      `;
+      toastWrap.appendChild(toast);
+      setTimeout(() => toast.remove(), 3200);
+    }
+
     function formatCore(core){
-      if (String(core).toLowerCase() === "n64") return "Nintendo64";
-      return "Playstation";
+      return String(core).toLowerCase() === "n64" ? "Nintendo64" : "Playstation";
     }
 
     function formatDate(date){
@@ -256,6 +342,22 @@
       }catch{
         return date || "-";
       }
+    }
+
+    function formatStatus(status){
+      const value = String(status || "pending").toLowerCase();
+      if (value === "approved") return "Aprovado";
+      if (value === "rejected") return "Reprovado";
+      if (value === "pending_info") return "Análise pendente";
+      return "Pendente";
+    }
+
+    function statusBadgeClass(status){
+      const value = String(status || "pending").toLowerCase();
+      if (value === "approved") return "badge--approved";
+      if (value === "rejected") return "badge--rejected";
+      if (value === "pending_info") return "badge--pendinginfo";
+      return "badge--pending";
     }
 
     async function loadTickets(){
@@ -282,7 +384,7 @@
         contentArea.innerHTML = `
           <div class="requests">
             ${requests.map(item => `
-              <div class="request-card">
+              <div class="request-card" data-ticket-id="${item.id}">
                 <div class="request-top">
                   <h2 class="request-game">${escapeHtml(item.game_title)}</h2>
 
@@ -291,8 +393,8 @@
                       ${escapeHtml(formatCore(item.core))}
                     </span>
 
-                    <span class="badge badge--pending">
-                      ${escapeHtml(item.status || "pending")}
+                    <span class="badge ${statusBadgeClass(item.status)}">
+                      ${escapeHtml(formatStatus(item.status))}
                     </span>
                   </div>
                 </div>
@@ -309,17 +411,92 @@
                   </div>
 
                   <div class="request-block" style="grid-column:1 / -1;">
-                    <span class="request-label">Observação</span>
+                    <span class="request-label">Observação do usuário</span>
                     <span class="request-value">${escapeHtml(item.notes || "Sem observações")}</span>
+                  </div>
+
+                  <div class="request-block" style="grid-column:1 / -1;">
+                    <span class="request-label">Resposta atual</span>
+                    <span class="request-value">${escapeHtml(item.admin_reply || "Sem resposta ainda")}</span>
+                  </div>
+                </div>
+
+                <div class="reply-box">
+                  <div class="field">
+                    <label>Status da resposta</label>
+                    <select class="reply-status">
+                      <option value="approved" ${item.status === "approved" ? "selected" : ""}>Aprovado</option>
+                      <option value="rejected" ${item.status === "rejected" ? "selected" : ""}>Reprovado</option>
+                      <option value="pending_info" ${item.status === "pending_info" ? "selected" : ""}>Análise pendente</option>
+                    </select>
+                  </div>
+
+                  <div class="field">
+                    <label>Resposta do admin</label>
+                    <textarea class="reply-text" maxlength="1000" placeholder="Digite a resposta para o usuário...">${escapeHtml(item.admin_reply || "")}</textarea>
+                  </div>
+
+                  <div class="reply-actions">
+                    <button type="button" class="btn btn--primary reply-save">Responder</button>
                   </div>
                 </div>
               </div>
             `).join("")}
           </div>
         `;
+
+        bindReplyActions();
       }catch(error){
         contentArea.innerHTML = `<div class="error">${escapeHtml(error.message || "Erro ao carregar tickets.")}</div>`;
       }
+    }
+
+    function bindReplyActions() {
+      document.querySelectorAll(".reply-save").forEach(button => {
+        button.addEventListener("click", async () => {
+          const card = button.closest("[data-ticket-id]");
+          const requestId = Number(card.dataset.ticketId);
+          const status = card.querySelector(".reply-status").value;
+          const adminReply = card.querySelector(".reply-text").value.trim();
+
+          if (!adminReply) {
+            showToast("error", "Resposta não enviada", "Digite a resposta do admin.");
+            return;
+          }
+
+          button.disabled = true;
+          button.textContent = "Salvando...";
+
+          try {
+            const response = await fetch("/api/admin-requests", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                username: loggedUser,
+                request_id: requestId,
+                status,
+                admin_reply: adminReply
+              })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+              throw new Error(data.message || "Erro ao responder ticket.");
+            }
+
+            showToast("success", "Resposta salva", "O ticket foi atualizado com sucesso.");
+            await loadTickets();
+          } catch (error) {
+            showToast("error", "Erro ao salvar", error.message || "Não foi possível responder o ticket.");
+          } finally {
+            button.disabled = false;
+            button.textContent = "Responder";
+          }
+        });
+      });
     }
 
     loadTickets();
