@@ -1,355 +1,255 @@
 (() => {
-  const config = window.SITE_CONFIG || {};
+  const config = window.DRAGPLAY_CONFIG || {};
 
-  const elements = {
-    dropZone: document.getElementById("dropZone"),
-    romFileInput: document.getElementById("romFileInput"),
-    biosFileInput: document.getElementById("biosFileInput"),
-    romUrlInput: document.getElementById("romUrlInput"),
-    biosUrlInput: document.getElementById("biosUrlInput"),
-    autostartToggle: document.getElementById("autostartToggle"),
-    loadRemoteBtn: document.getElementById("loadRemoteBtn"),
-    startBtn: document.getElementById("startBtn"),
-    resetBtn: document.getElementById("resetBtn"),
-    backBtn: document.getElementById("backBtn"),
-    currentSelection: document.getElementById("currentSelection"),
-    heroSection: document.getElementById("heroSection"),
-    playerShell: document.getElementById("playerShell"),
-    gameTitle: document.getElementById("gameTitle"),
-    noticeBox: document.getElementById("noticeBox"),
-    playerHelperText: document.getElementById("playerHelperText")
-  };
+  const heroSection = document.getElementById("heroSection");
+  const playerShell = document.getElementById("playerShell");
+  const dropZone = document.getElementById("dropZone");
+  const romFileInput = document.getElementById("romFileInput");
+  const biosFileInput = document.getElementById("biosFileInput");
+  const biosUrlInput = document.getElementById("biosUrlInput");
+  const autostartToggle = document.getElementById("autostartToggle");
+  const backBtn = document.getElementById("backBtn");
+  const gameEl = document.getElementById("game");
+  const gameTitleEl = document.getElementById("gameTitle");
+  const runningSystemEl = document.getElementById("runningSystem");
+  const playerHelperText = document.getElementById("playerHelperText");
+  const noticeBox = document.getElementById("noticeBox");
+
+  const systemRow = document.getElementById("systemRow");
+  const systemSelect = document.getElementById("systemSelect");
+  const systemStartBtn = document.getElementById("systemStartBtn");
 
   const state = {
-    romSource: null,
-    romObjectUrl: null,
-    biosSource: null,
-    biosObjectUrl: null,
-    started: false,
+    romFile: null,
+    biosFile: null,
+    selectedSystem: null,
+    objectUrls: [],
     loaderScript: null
   };
 
-  const stepCards = {
-    drag: document.querySelector('[data-step-card="drag"]'),
-    wait: document.querySelector('[data-step-card="wait"]'),
-    play: document.querySelector('[data-step-card="play"]')
-  };
-
-  function setStep(step) {
-    const order = ["drag", "wait", "play"];
-    order.forEach((name, index) => {
-      const card = stepCards[name];
-      if (!card) return;
-      card.classList.remove("is-active", "is-done");
-      if (name === step) card.classList.add("is-active");
-      if (index < order.indexOf(step)) card.classList.add("is-done");
-    });
+  function addObjectUrl(url) {
+    state.objectUrls.push(url);
+    return url;
   }
 
-  function getExtension(name = "") {
-    const normalized = String(name).toLowerCase().split("?")[0].split("#")[0];
-    const index = normalized.lastIndexOf(".");
-    return index >= 0 ? normalized.slice(index) : "";
-  }
-
-  function isArchiveExtension(ext) {
-    return ext === ".zip" || ext === ".7z";
-  }
-
-  function isPreferredPsxExtension(ext) {
-    return ext === ".cue" || ext === ".chd" || ext === ".pbp" || ext === ".m3u";
-  }
-
-  function setSelectionText(text, isError = false) {
-    elements.currentSelection.innerHTML = `<span>${text}</span>`;
-    elements.currentSelection.style.borderColor = isError
-      ? "rgba(239,68,68,.5)"
-      : "rgba(255,255,255,.08)";
-  }
-
-  function updateButtons() {
-    elements.startBtn.disabled = !state.romSource;
-  }
-
-  function clearObjectUrl(key) {
-    if (state[key]) {
-      URL.revokeObjectURL(state[key]);
-      state[key] = null;
-    }
-  }
-
-  function normalizeName(source) {
-    if (!source) return "Arquivo desconhecido";
-    if (source instanceof File) return source.name;
-    try {
-      const url = new URL(source, window.location.href);
-      const parts = url.pathname.split("/").filter(Boolean);
-      return decodeURIComponent(parts[parts.length - 1] || "arquivo-remoto");
-    } catch {
-      return String(source);
-    }
-  }
-
-  function updateHelperBySource(source) {
-    const name = normalizeName(source);
-    const ext = getExtension(name);
-
-    if (ext === ".cue") {
-      elements.playerHelperText.innerHTML = "Arquivo ideal detectado: <code>.cue</code>. Esse é o melhor caminho para PS1.";
-      elements.noticeBox.innerHTML = "Boa. Você está usando <code>.cue</code>, que é a forma mais confiável para montar o disco do PS1.";
-      return;
-    }
-
-    if (isArchiveExtension(ext)) {
-      elements.playerHelperText.innerHTML = "Você está usando um pacote compactado. Se sair som e não aparecer imagem, teste pelo <code>.cue</code>.";
-      elements.noticeBox.innerHTML = "Arquivo compactado detectado. Pode funcionar, mas para PS1 é mais seguro extrair o jogo e arrastar o <code>.cue</code>.";
-      return;
-    }
-
-    if (ext === ".bin") {
-      elements.playerHelperText.innerHTML = "<code>.bin</code> detectado. Para PS1, prefira arrastar o <code>.cue</code> da mesma pasta.";
-      elements.noticeBox.innerHTML = "<code>.bin</code> selecionado. Isso pode abrir, mas o recomendado é usar o <code>.cue</code>.";
-      return;
-    }
-
-    if (isPreferredPsxExtension(ext)) {
-      elements.playerHelperText.textContent = "Formato favorável para PS1 detectado.";
-      elements.noticeBox.textContent = "Formato compatível detectado. Se necessário, adicione BIOS para melhorar a compatibilidade.";
-      return;
-    }
-
-    elements.playerHelperText.textContent = "Preferência: extraia o jogo e use o arquivo .cue.";
-    elements.noticeBox.textContent = "Se tiver qualquer tela preta ou comportamento estranho, teste com o arquivo .cue e uma BIOS de PS1.";
-  }
-
-  function setRomSource(source) {
-    clearObjectUrl("romObjectUrl");
-    state.romSource = source;
-
-    const name = normalizeName(source);
-    const ext = getExtension(name);
-
-    if (source instanceof File) {
-      state.romObjectUrl = URL.createObjectURL(source);
-      setSelectionText(`Jogo selecionado: <strong>${source.name}</strong>`);
-    } else {
-      setSelectionText(`Jogo remoto: <strong>${normalizeName(source)}</strong>`);
-    }
-
-    updateHelperBySource(source);
-
-    if (isArchiveExtension(ext)) {
-      setSelectionText(`Jogo selecionado: <strong>${name}</strong> <br><small>Melhor prática para PS1: extraia o pacote e use o <code>.cue</code>.</small>`);
-    }
-
-    if (ext === ".bin") {
-      setSelectionText(`Jogo selecionado: <strong>${name}</strong> <br><small>Recomendado: arraste o <code>.cue</code> da mesma pasta.</small>`);
-    }
-
-    updateButtons();
-    setStep("wait");
-  }
-
-  function setBiosSource(source) {
-    clearObjectUrl("biosObjectUrl");
-    state.biosSource = source;
-
-    if (source instanceof File) {
-      state.biosObjectUrl = URL.createObjectURL(source);
-    }
-  }
-
-  function getRomUrl() {
-    if (!state.romSource) return "";
-    return state.romSource instanceof File ? state.romObjectUrl : state.romSource;
-  }
-
-  function getBiosUrl() {
-    if (!state.biosSource) return "";
-    return state.biosSource instanceof File ? state.biosObjectUrl : state.biosSource;
-  }
-
-  function cleanupExistingEmulator() {
-    if (window.EJS_emulator && typeof window.EJS_emulator.exit === "function") {
+  function cleanupObjectUrls() {
+    for (const url of state.objectUrls) {
       try {
-        window.EJS_emulator.exit();
-      } catch (_) {}
+        URL.revokeObjectURL(url);
+      } catch {}
+    }
+    state.objectUrls = [];
+  }
+
+  function getLowerFileName(file) {
+    return String(file?.name || "").trim().toLowerCase();
+  }
+
+  function getExtensionFromName(name) {
+    const clean = String(name || "").toLowerCase();
+    const parts = clean.split(".");
+    return parts.length > 1 ? parts.pop() : "";
+  }
+
+  function detectSystemFromFileName(fileName) {
+    const name = String(fileName || "").toLowerCase();
+
+    const systems = config.SYSTEMS || {};
+    for (const [systemKey, systemData] of Object.entries(systems)) {
+      const archiveHints = Array.isArray(systemData.archiveHints) ? systemData.archiveHints : [];
+      for (const hint of archiveHints) {
+        if (name.endsWith(hint)) {
+          return { system: systemKey, ambiguous: false };
+        }
+      }
     }
 
-    const gameContainer = document.getElementById("game");
-    if (gameContainer) gameContainer.innerHTML = "";
+    const ext = getExtensionFromName(name);
+    for (const [systemKey, systemData] of Object.entries(systems)) {
+      const exts = Array.isArray(systemData.extensions) ? systemData.extensions : [];
+      if (exts.includes(ext)) {
+        return { system: systemKey, ambiguous: false };
+      }
+    }
 
+    if (ext === "zip" || ext === "7z") {
+      return { system: null, ambiguous: true };
+    }
+
+    return { system: null, ambiguous: false };
+  }
+
+  function setNotice(text) {
+    if (noticeBox) noticeBox.textContent = text;
+  }
+
+  function showSystemChooser(show) {
+    if (!systemRow) return;
+    systemRow.classList.toggle("is-visible", !!show);
+  }
+
+  function getSystemLabel(systemKey) {
+    return config.SYSTEMS?.[systemKey]?.label || systemKey || "Sistema";
+  }
+
+  function getGameTitle(fileName) {
+    const clean = String(fileName || "Jogo").replace(/\.(zip|7z|cue|bin|chd|pbp|m3u|ccd|img|mdf|toc|cbn|z64|n64|v64)$/i, "");
+    return clean || "Jogo";
+  }
+
+  function resetEmbeddedGame() {
     if (state.loaderScript) {
-      state.loaderScript.remove();
+      try {
+        state.loaderScript.remove();
+      } catch {}
       state.loaderScript = null;
     }
 
-    delete window.EJS_emulator;
+    if (gameEl) {
+      gameEl.innerHTML = "";
+    }
+
     delete window.EJS_player;
     delete window.EJS_core;
+    delete window.EJS_pathtodata;
     delete window.EJS_gameUrl;
     delete window.EJS_biosUrl;
-    delete window.EJS_gameName;
-    delete window.EJS_pathtodata;
     delete window.EJS_startOnLoaded;
-    delete window.EJS_backgroundColor;
-    delete window.EJS_disableDatabases;
-    delete window.EJS_disableLocalStorage;
-    delete window.EJS_onGameStart;
-    delete window.EJS_onLoad;
   }
 
-  function launchGame() {
-    const romUrl = getRomUrl();
-    if (!romUrl) {
-      setSelectionText("Você precisa definir um arquivo ou URL do jogo antes de iniciar.", true);
+  function hardResetPage() {
+    window.location.reload();
+  }
+
+  function launchGame({ romFile, systemKey }) {
+    if (!romFile || !systemKey) return;
+
+    const systemConfig = config.SYSTEMS?.[systemKey];
+    if (!systemConfig) {
+      setNotice("Sistema não suportado.");
       return;
     }
 
-    cleanupExistingEmulator();
-    setStep("play");
+    cleanupObjectUrls();
+    resetEmbeddedGame();
 
-    const gameTitle = config.GAME_TITLE || normalizeName(state.romSource);
-    elements.gameTitle.textContent = gameTitle;
-    elements.heroSection.classList.add("hidden");
-    elements.playerShell.classList.remove("hidden");
+    const romUrl = addObjectUrl(URL.createObjectURL(romFile));
+    let biosUrl = systemConfig.biosUrl || "";
+
+    if (systemKey === "psx" && biosFileInput?.files?.[0]) {
+      biosUrl = addObjectUrl(URL.createObjectURL(biosFileInput.files[0]));
+    } else if (systemKey === "psx" && biosUrlInput?.value?.trim()) {
+      biosUrl = biosUrlInput.value.trim();
+    }
 
     window.EJS_player = "#game";
-    window.EJS_core = config.CORE || "psx";
+    window.EJS_core = systemConfig.core;
+    window.EJS_pathtodata = config.DATA_PATH || "./data/";
     window.EJS_gameUrl = romUrl;
-    window.EJS_biosUrl = getBiosUrl() || "";
-    window.EJS_gameName = gameTitle;
-    window.EJS_pathtodata = config.DATA_PATH || "https://cdn.emulatorjs.org/stable/data/";
-    window.EJS_startOnLoaded = Boolean(elements.autostartToggle.checked);
-    window.EJS_backgroundColor = "#000000";
-    window.EJS_disableDatabases = false;
-    window.EJS_disableLocalStorage = false;
+    window.EJS_startOnLoaded = !!(autostartToggle?.checked ?? config.AUTO_START ?? true);
 
-    window.EJS_onGameStart = function () {
-      elements.noticeBox.innerHTML = "Emulador carregado. Se houver som sem imagem, volte e teste com o <code>.cue</code> extraído e BIOS de PS1.";
-    };
+    if (biosUrl) {
+      window.EJS_biosUrl = biosUrl;
+    }
 
     const script = document.createElement("script");
-    script.src = `${window.EJS_pathtodata}loader.js`;
+    script.src = `${window.EJS_pathtodata.replace(/\/+$/, "")}/loader.js`;
     script.async = true;
-    script.onerror = () => {
-      setSelectionText("Falha ao carregar o EmulatorJS. Confira a CDN ou sua conexão.", true);
-      elements.heroSection.classList.remove("hidden");
-      elements.playerShell.classList.add("hidden");
-    };
     document.body.appendChild(script);
     state.loaderScript = script;
-    state.started = true;
+
+    heroSection.classList.add("hidden");
+    playerShell.classList.remove("hidden");
+
+    gameTitleEl.textContent = getGameTitle(romFile.name);
+    runningSystemEl.textContent = getSystemLabel(systemKey);
+    playerHelperText.textContent = `Core carregado: ${getSystemLabel(systemKey)}.`;
+
+    setNotice(
+      systemKey === "psx"
+        ? "PS1 iniciado. Se um .zip falhar, tente o arquivo .cue."
+        : "Nintendo 64 iniciado."
+    );
   }
 
-  function resetAll() {
-    cleanupExistingEmulator();
-    clearObjectUrl("romObjectUrl");
-    clearObjectUrl("biosObjectUrl");
+  function handleRomSelection(file) {
+    if (!file) return;
 
-    state.romSource = null;
-    state.biosSource = null;
-    state.started = false;
+    state.romFile = file;
 
-    elements.romFileInput.value = "";
-    elements.biosFileInput.value = "";
-    elements.romUrlInput.value = config.ROM_URL || "";
-    elements.biosUrlInput.value = config.BIOS_URL || "";
-    elements.autostartToggle.checked = config.AUTO_START !== false;
+    const detection = detectSystemFromFileName(file.name);
+    if (detection.ambiguous) {
+      state.selectedSystem = systemSelect?.value || "psx";
+      showSystemChooser(true);
+      setNotice("Arquivo compactado ambíguo. Escolha PlayStation ou Nintendo 64 e clique em Iniciar.");
+      return;
+    }
 
-    elements.heroSection.classList.remove("hidden");
-    elements.playerShell.classList.add("hidden");
+    showSystemChooser(false);
 
-    setSelectionText("Nenhum jogo selecionado.");
-    elements.playerHelperText.textContent = "Preferência: extraia o jogo e use o arquivo .cue.";
-    elements.noticeBox.innerHTML = "Se o .zip não funcionar, baixe e use o arquivo .cue.";
-    setStep("drag");
-    updateButtons();
-  }
+    if (!detection.system) {
+      setNotice("Formato não reconhecido. Use PS1 (.cue, .bin, .chd...) ou N64 (.z64, .n64, .v64).");
+      return;
+    }
 
-  function wireDropzone() {
-    const preventDefaults = (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-    };
+    state.selectedSystem = detection.system;
 
-    ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
-      elements.dropZone.addEventListener(eventName, preventDefaults);
-    });
-
-    ["dragenter", "dragover"].forEach((eventName) => {
-      elements.dropZone.addEventListener(eventName, () => {
-        elements.dropZone.classList.add("is-dragover");
+    if (autostartToggle?.checked ?? config.AUTO_START ?? true) {
+      launchGame({
+        romFile: state.romFile,
+        systemKey: state.selectedSystem
       });
-    });
-
-    ["dragleave", "drop"].forEach((eventName) => {
-      elements.dropZone.addEventListener(eventName, () => {
-        elements.dropZone.classList.remove("is-dragover");
-      });
-    });
-
-    elements.dropZone.addEventListener("drop", (event) => {
-      const file = event.dataTransfer?.files?.[0];
-      if (!file) return;
-      setRomSource(file);
-      if (elements.autostartToggle.checked) launchGame();
-    });
-  }
-
-  function init() {
-    elements.romUrlInput.value = config.ROM_URL || "";
-    elements.biosUrlInput.value = config.BIOS_URL || "";
-    elements.autostartToggle.checked = config.AUTO_START !== false;
-    elements.gameTitle.textContent = config.GAME_TITLE || "Resident Evil 2 — Dual Shock Ver.";
-
-    wireDropzone();
-    updateButtons();
-
-    elements.romFileInput.addEventListener("change", (event) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-      setRomSource(file);
-      if (elements.autostartToggle.checked) launchGame();
-    });
-
-    elements.biosFileInput.addEventListener("change", (event) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-      setBiosSource(file);
-    });
-
-    elements.loadRemoteBtn.addEventListener("click", () => {
-      const url = elements.romUrlInput.value.trim();
-      const biosUrl = elements.biosUrlInput.value.trim();
-
-      if (!url) {
-        setSelectionText("Cole uma URL do jogo antes de clicar em carregar.", true);
-        return;
-      }
-
-      setRomSource(url);
-      if (biosUrl) setBiosSource(biosUrl);
-      if (elements.autostartToggle.checked) launchGame();
-    });
-
-    elements.startBtn.addEventListener("click", () => {
-      const biosUrl = elements.biosUrlInput.value.trim();
-      if (!state.biosSource && biosUrl) setBiosSource(biosUrl);
-      launchGame();
-    });
-
-    elements.resetBtn.addEventListener("click", resetAll);
-    elements.backBtn.addEventListener("click", resetAll);
-
-    if (config.ROM_URL) {
-      setRomSource(config.ROM_URL);
-      if (config.BIOS_URL) setBiosSource(config.BIOS_URL);
-      if (config.AUTO_START !== false) {
-        launchGame();
-      }
     }
   }
 
-  init();
+  if (dropZone && romFileInput) {
+    dropZone.addEventListener("dragover", (event) => {
+      event.preventDefault();
+    });
+
+    dropZone.addEventListener("drop", (event) => {
+      event.preventDefault();
+      const file = event.dataTransfer?.files?.[0];
+      if (file) {
+        romFileInput.files = event.dataTransfer.files;
+        handleRomSelection(file);
+      }
+    });
+
+    romFileInput.addEventListener("change", () => {
+      const file = romFileInput.files?.[0];
+      handleRomSelection(file);
+    });
+  }
+
+  if (systemSelect) {
+    systemSelect.addEventListener("change", () => {
+      state.selectedSystem = systemSelect.value;
+    });
+  }
+
+  if (systemStartBtn) {
+    systemStartBtn.addEventListener("click", () => {
+      if (!state.romFile) {
+        setNotice("Selecione um arquivo primeiro.");
+        return;
+      }
+
+      const selected = systemSelect?.value || "psx";
+      state.selectedSystem = selected;
+
+      launchGame({
+        romFile: state.romFile,
+        systemKey: state.selectedSystem
+      });
+    });
+  }
+
+  if (backBtn) {
+    backBtn.addEventListener("click", hardResetPage);
+  }
+
+  window.addEventListener("beforeunload", () => {
+    cleanupObjectUrls();
+  });
 })();
