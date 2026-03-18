@@ -209,38 +209,6 @@
       width:100%;
     }
 
-    .system-row{
-      display:none;
-      width:100%;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
-
-    .system-row.is-visible{
-      display:flex;
-    }
-
-    .system-label{
-      font-size:12px;
-      color:#8b8b8b;
-    }
-
-    .system-select{
-      height:40px;
-      min-width:180px;
-      border-radius:8px;
-      border:1px solid rgba(255,255,255,.08);
-      background:#0d0d12;
-      color:#e6e6e6;
-      padding:0 12px;
-      outline:none;
-    }
-
-    .system-select:focus{
-      border-color:rgba(106,0,255,.65);
-    }
-
     .player-shell{
       width:100%;
       max-width:1100px;
@@ -638,17 +606,8 @@
           <button id="resetBtn" class="btn btn--ghost" type="button">Reset</button>
         </div>
 
-        <div id="systemRow" class="system-row">
-          <span class="system-label">Arquivo compactado ambíguo:</span>
-          <select id="systemSelect" class="system-select">
-            <option value="psx">PlayStation</option>
-            <option value="n64">Nintendo 64</option>
-          </select>
-          <button id="systemStartBtn" class="btn btn--primary" type="button">Iniciar</button>
-        </div>
-
         <p class="notice" id="noticeBox">
-          PS1: se o .zip não funcionar, baixe e use o arquivo .cue. N64: prefira .z64, .n64 ou .v64.
+          O emulador foi ajustado para funcionar com jogos em .zip testados dentro do fluxo do site. Arquivos externos ou fora desse fluxo podem não funcionar corretamente.
         </p>
       </div>
     </section>
