@@ -273,7 +273,7 @@
     playerHelperText.textContent = `Core carregado: ${getSystemLabel(systemKey)}.`;
 
     setNotice(
-      "Para o sistema reconhecer o core correto, baixe a ROM pela página Downloads. Arquivos externos podem não funcionar adequadamente. Se o .zip não funcionar, teste o .cue ou .z64."
+      "Para o sistema reconhecer o core correto, baixe a ROM pela página Downloads. Os arquivos disponíveis lá já foram testados e seguem o fluxo do site. ROMs externas podem não funcionar corretamente. Se o .zip não funcionar, teste o .cue ou .z64."
     );
   }
 
