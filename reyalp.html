@@ -127,6 +127,7 @@
 
     .download-top,
     .request-top,
+    .mytickets-top,
     .tutorial-top,
     .admin-top{
       font-size:14px;
@@ -142,6 +143,7 @@
 
     .download-top:hover,
     .request-top:hover,
+    .mytickets-top:hover,
     .tutorial-top:hover,
     .admin-top:hover{
       color:#fff;
@@ -565,6 +567,7 @@
 
       .download-top,
       .request-top,
+      .mytickets-top,
       .tutorial-top,
       .admin-top{
         font-size:13px;
@@ -678,20 +681,14 @@
 
   <main class="shell" id="appShell">
     <section class="hero" id="heroSection">
-      <div class="hero__copy">
-        <p class="eyebrow">PlayStation / EmulatorJS</p>
-        <h1>Drag <span>•</span> Wait <span>•</span> Play</h1>
-        <p class="lead">
-          Fluxo simples pra baixar o jogo, extrair e rodar no navegador.
-        </p>
-      </div>
-
+      <div class="hero__copy"></div>
       <div class="status-rail" aria-label="Fluxo de carregamento"></div>
 
       <div class="panel">
         <div class="top-actions">
           <a class="download-top" href="./download.html">Downloads</a>
           <button class="request-top" id="openRequestBtn" type="button">Solicitar</button>
+          <button class="mytickets-top" id="openMyTicketsBtn" type="button">Meus Tickets</button>
           <button class="tutorial-top" id="openTutorialBtn" type="button">Tutorial</button>
           <button class="admin-top hidden" id="openAdminBtn" type="button">Tickets</button>
         </div>
@@ -844,7 +841,7 @@
             id="requestNotes"
             name="notes"
             maxlength="1000"
-            placeholder="Ex.: versão USA, idioma PT-BR, jogo em português, preferência por versão específica..."
+            placeholder="Ex.: versão USA, preferência por idioma ou alguma observação útil..."
           ></textarea>
         </div>
 
@@ -881,6 +878,8 @@
     const toastWrap = document.getElementById("toastWrap");
 
     const openAdminBtn = document.getElementById("openAdminBtn");
+    const openMyTicketsBtn = document.getElementById("openMyTicketsBtn");
+
     const loggedUser =
       sessionStorage.getItem("loggedUser") ||
       sessionStorage.getItem("user") ||
@@ -954,6 +953,10 @@
       window.location.href = "./admin-requests.html";
     });
 
+    openMyTicketsBtn.addEventListener("click", () => {
+      window.location.href = "./my-requests.html";
+    });
+
     tutorialOverlay.addEventListener("click", (event) => {
       if (event.target === tutorialOverlay) {
         closeTutorial();
@@ -994,6 +997,11 @@
       if (!core) {
         showToast("error", "Solicitação não enviada", "Escolha o CORE desejado.");
         requestCore.focus();
+        return;
+      }
+
+      if (!requesterName) {
+        showToast("error", "Solicitação não enviada", "Usuário não identificado na sessão.");
         return;
       }
 
