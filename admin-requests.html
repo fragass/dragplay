@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <script>
+    if (!sessionStorage.getItem("token")) {
+      window.location.href = "index.html";
+    }
+  </script>
+  <link rel="icon" href="favicon.png" type="image/png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel de Solicitações - Workday</title>
+  <meta name="theme-color" content="#0a0a0f" />
+
+  <style>
+    *{box-sizing:border-box}
+
+    html,body{
+      margin:0;
+      width:100%;
+      min-height:100%;
+    }
+
+    body{
+      background:#0a0a0f;
+      color:#e6e6e6;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;
+    }
+
+    .bg{
+      position:fixed;
+      inset:0;
+      background:
+        radial-gradient(circle at top, rgba(106,0,255,.12) 0%, rgba(106,0,255,.04) 20%, transparent 45%),
+        #0a0a0f;
+      pointer-events:none;
+    }
+
+    .shell{
+      position:relative;
+      min-height:100vh;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      padding:28px;
+    }
+
+    .card{
+      position:relative;
+      width:100%;
+      max-width:980px;
+      background:#111116;
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:14px;
+      padding:54px 24px 24px;
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+      box-shadow:0 12px 40px rgba(0,0,0,.35);
+    }
+
+    .back{
+      position:absolute;
+      top:16px;
+      left:16px;
+      font-size:14px;
+      text-decoration:none;
+      color:#b8b8b8;
+      padding:6px 10px;
+      border-radius:6px;
+      transition:.15s;
+    }
+
+    .back:hover{
+      color:#fff;
+      background:rgba(255,255,255,.05);
+    }
+
+    .title{
+      margin:0;
+      font-size:20px;
+      font-weight:600;
+      color:#f2f2f2;
+    }
+
+    .subtitle{
+      margin:0;
+      font-size:13px;
+      color:#8d8d8d;
+    }
+
+    .loading,
+    .error,
+    .empty{
+      padding:14px;
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:10px;
+      background:rgba(255,255,255,.01);
+      font-size:13px;
+      color:#8b8b8b;
+    }
+
+    .error{
+      color:#ff9f9f;
+    }
+
+    .requests{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .request-card{
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:12px;
+      background:rgba(255,255,255,.01);
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .request-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .request-game{
+      margin:0;
+      font-size:15px;
+      font-weight:600;
+      color:#f2f2f2;
+    }
+
+    .request-meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:24px;
+      padding:4px 9px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:600;
+      letter-spacing:.3px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      color:#d8d8d8;
+    }
+
+    .badge--psx{
+      color:#d7d0ff;
+      background:rgba(106,0,255,.14);
+      border-color:rgba(106,0,255,.28);
+    }
+
+    .badge--n64{
+      color:#bfe3ff;
+      background:rgba(0,153,255,.12);
+      border-color:rgba(0,153,255,.22);
+    }
+
+    .badge--pending{
+      color:#ffd899;
+      background:rgba(255,179,71,.12);
+      border-color:rgba(255,179,71,.22);
+    }
+
+    .request-info{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+    }
+
+    .request-block{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      min-width:0;
+    }
+
+    .request-label{
+      font-size:11px;
+      color:#8d8d8d;
+      text-transform:uppercase;
+      letter-spacing:.5px;
+    }
+
+    .request-value{
+      font-size:13px;
+      color:#e6e6e6;
+      word-break:break-word;
+      line-height:1.5;
+    }
+
+    @media (max-width: 700px){
+      .shell{
+        padding:16px;
+      }
+
+      .card{
+        padding:52px 16px 16px;
+      }
+
+      .request-info{
+        grid-template-columns:1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+
+  <main class="shell">
+    <section class="card">
+      <a class="back" href="./reyalp.html">Voltar</a>
+
+      <h1 class="title">Painel de Solicitações</h1>
+      <p class="subtitle">Solicitações enviadas pelos usuários.</p>
+
+      <div id="contentArea">
+        <div class="loading">Carregando tickets...</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const contentArea = document.getElementById("contentArea");
+    const loggedUser = sessionStorage.getItem("loggedUser") || "";
+
+    function escapeHtml(text){
+      return String(text || "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function formatCore(core){
+      if (String(core).toLowerCase() === "n64") return "Nintendo64";
+      return "Playstation";
+    }
+
+    function formatDate(date){
+      try{
+        return new Date(date).toLocaleString("pt-BR");
+      }catch{
+        return date || "-";
+      }
+    }
+
+    async function loadTickets(){
+      if (!loggedUser) {
+        contentArea.innerHTML = `<div class="error">Usuário não encontrado na sessão.</div>`;
+        return;
+      }
+
+      try{
+        const response = await fetch(`/api/admin-requests?username=${encodeURIComponent(loggedUser)}`);
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || "Erro ao carregar tickets.");
+        }
+
+        const requests = Array.isArray(data.requests) ? data.requests : [];
+
+        if (!requests.length) {
+          contentArea.innerHTML = `<div class="empty">Nenhuma solicitação encontrada.</div>`;
+          return;
+        }
+
+        contentArea.innerHTML = `
+          <div class="requests">
+            ${requests.map(item => `
+              <div class="request-card">
+                <div class="request-top">
+                  <h2 class="request-game">${escapeHtml(item.game_title)}</h2>
+
+                  <div class="request-meta">
+                    <span class="badge ${String(item.core).toLowerCase() === "n64" ? "badge--n64" : "badge--psx"}">
+                      ${escapeHtml(formatCore(item.core))}
+                    </span>
+
+                    <span class="badge badge--pending">
+                      ${escapeHtml(item.status || "pending")}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="request-info">
+                  <div class="request-block">
+                    <span class="request-label">Solicitante</span>
+                    <span class="request-value">${escapeHtml(item.requester_name || "Não informado")}</span>
+                  </div>
+
+                  <div class="request-block">
+                    <span class="request-label">Enviado em</span>
+                    <span class="request-value">${escapeHtml(formatDate(item.created_at))}</span>
+                  </div>
+
+                  <div class="request-block" style="grid-column:1 / -1;">
+                    <span class="request-label">Observação</span>
+                    <span class="request-value">${escapeHtml(item.notes || "Sem observações")}</span>
+                  </div>
+                </div>
+              </div>
+            `).join("")}
+          </div>
+        `;
+      }catch(error){
+        contentArea.innerHTML = `<div class="error">${escapeHtml(error.message || "Erro ao carregar tickets.")}</div>`;
+      }
+    }
+
+    loadTickets();
+  </script>
+</body>
+</html>
