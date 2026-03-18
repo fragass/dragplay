@@ -167,13 +167,6 @@
       color:#8b8b8b;
     }
 
-    .footer{
-      margin-top:2px;
-      text-align:center;
-      font-size:12px;
-      color:#6f6f6f;
-    }
-
     .status-dot{
       width:8px;
       height:8px;
@@ -297,10 +290,15 @@
     }
 
     function normalizePlatform(platform){
-      const value = String(platform || "").trim().toUpperCase();
+      const value = String(platform || "").trim().toLowerCase();
 
-      if (value === "N64" || value === "NINTENDO 64") return "n64";
+      if (value === "n64" || value === "nintendo 64") return "n64";
       return "psx";
+    }
+
+    function getSecondaryButtonLabel(platform){
+      const normalized = normalizePlatform(platform);
+      return normalized === "n64" ? "Download .z64" : "Download .cue";
     }
 
     function buildButton(url, text, extraClass = "", platform = "PS1", title = ""){
@@ -323,6 +321,7 @@
       gamesContainer.innerHTML = games.map(game=>{
         const statusClass = getStatusClass(game.status);
         const platform = escapeHtml(game.platform || "PS1");
+        const secondaryLabel = getSecondaryButtonLabel(game.platform);
 
         return `
           <div class="game">
@@ -335,7 +334,7 @@
 
             <div class="options">
               ${buildButton(game.zip_url, "Download .zip", "", platform, game.title)}
-              ${buildButton(game.cue_url, "Download .cue", "btn--ghost", platform, game.title)}
+              ${buildButton(game.cue_url, secondaryLabel, "btn--ghost", platform, game.title)}
             </div>
 
             <div class="meta">Google Drive</div>
