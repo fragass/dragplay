@@ -279,7 +279,7 @@
   </span>
 
   <script>
-    const gamesContainer = document.getElementById("gamesContainer")
+    const gamesContainer = document.getElementById("gamesContainer");
 
     function escapeHtml(text){
       return String(text || "")
@@ -287,32 +287,42 @@
         .replaceAll("<","&lt;")
         .replaceAll(">","&gt;")
         .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;")
+        .replaceAll("'","&#039;");
     }
 
     function getStatusClass(status){
-      if(status === "offline") return "status-offline"
-      if(status === "maintenance") return "status-maintenance"
-      return "status-online"
+      if(status === "offline") return "status-offline";
+      if(status === "maintenance") return "status-maintenance";
+      return "status-online";
     }
 
-    function buildButton(url,text,extra=""){
+    function normalizePlatform(platform){
+      const value = String(platform || "").trim().toUpperCase();
+
+      if (value === "N64" || value === "NINTENDO 64") return "n64";
+      return "psx";
+    }
+
+    function buildButton(url, text, extraClass = "", platform = "PS1", title = ""){
       if(!url){
-        return `<span class="btn ${extra} btn--disabled">${text}</span>`
+        return `<span class="btn ${extraClass} btn--disabled">${text}</span>`;
       }
 
-      return `<a class="btn ${extra}" href="${url}">${text}</a>`
+      const safePlatform = escapeHtml(platform);
+      const safeTitle = escapeHtml(title);
+
+      return `<a class="btn ${extraClass}" href="${url}" data-platform="${safePlatform}" data-title="${safeTitle}">${text}</a>`;
     }
 
     function renderGames(games){
       if(!games.length){
-        gamesContainer.innerHTML = `<div class="empty">Nenhum jogo disponível.</div>`
-        return
+        gamesContainer.innerHTML = `<div class="empty">Nenhum jogo disponível.</div>`;
+        return;
       }
 
       gamesContainer.innerHTML = games.map(game=>{
-        const statusClass = getStatusClass(game.status)
-        const platform = escapeHtml(game.platform || "PS1")
+        const statusClass = getStatusClass(game.status);
+        const platform = escapeHtml(game.platform || "PS1");
 
         return `
           <div class="game">
@@ -324,32 +334,43 @@
             </h2>
 
             <div class="options">
-              ${buildButton(game.zip_url,"Download .zip")}
-              ${buildButton(game.cue_url,"Download .cue","btn--ghost")}
+              ${buildButton(game.zip_url, "Download .zip", "", platform, game.title)}
+              ${buildButton(game.cue_url, "Download .cue", "btn--ghost", platform, game.title)}
             </div>
 
             <div class="meta">Google Drive</div>
           </div>
-        `
-      }).join("")
+        `;
+      }).join("");
+
+      gamesContainer.querySelectorAll("a[data-platform]").forEach(link => {
+        link.addEventListener("click", () => {
+          const platform = normalizePlatform(link.dataset.platform);
+          const title = String(link.dataset.title || "").trim();
+
+          sessionStorage.setItem("dragplay_last_platform", platform);
+          sessionStorage.setItem("dragplay_last_title", title);
+          sessionStorage.setItem("dragplay_flow_source", "downloads");
+        });
+      });
     }
 
     async function loadGames(){
       try{
-        const res = await fetch("/api/games")
+        const res = await fetch("/api/games");
 
         if(!res.ok){
-          throw new Error("API error")
+          throw new Error("API error");
         }
 
-        const data = await res.json()
-        renderGames(data)
+        const data = await res.json();
+        renderGames(data);
       }catch(err){
-        gamesContainer.innerHTML = `<div class="error">Erro ao carregar jogos</div>`
+        gamesContainer.innerHTML = `<div class="error">Erro ao carregar jogos</div>`;
       }
     }
 
-    loadGames()
+    loadGames();
   </script>
 </body>
 </html>
