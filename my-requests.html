@@ -182,6 +182,85 @@
       word-break:break-word;
       line-height:1.5;
     }
+    .followup-box{
+      border-top:1px solid rgba(255,255,255,.06);
+      padding-top:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .field label{
+      font-size:12px;
+      color:#b8b8b8;
+    }
+    .field textarea{
+      width:100%;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.08);
+      background:#0d0d12;
+      color:#e6e6e6;
+      padding:12px 14px;
+      outline:none;
+      transition:.15s;
+      height:90px;
+      resize:none;
+    }
+    .field textarea:focus{
+      border-color:rgba(106,0,255,.65);
+      background:#0f0f16;
+    }
+    .followup-actions{
+      display:flex;
+      justify-content:flex-end;
+    }
+    .btn{
+      height:40px;
+      padding:0 16px;
+      border-radius:8px;
+      border:none;
+      cursor:pointer;
+      transition:.15s;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:14px;
+    }
+    .btn--primary{
+      background:#6a00ff;
+      color:#fff;
+    }
+    .btn--primary:hover{
+      background:#7c1cff;
+    }
+    .toast-wrap{
+      position:fixed;
+      right:16px;
+      bottom:16px;
+      z-index:10000;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      pointer-events:none;
+    }
+    .toast{
+      min-width:280px;
+      max-width:420px;
+      padding:14px 16px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.08);
+      background:#111116;
+      color:#e6e6e6;
+      box-shadow:0 18px 40px rgba(0,0,0,.35);
+    }
+    .toast--success{border-color:rgba(60,255,92,.18)}
+    .toast--error{border-color:rgba(255,77,77,.18)}
+    .toast-title{display:block;font-size:13px;font-weight:600;margin-bottom:4px}
+    .toast-text{display:block;font-size:12px;line-height:1.5;color:#b8b8b8}
     @media (max-width:700px){
       .shell{padding:16px}
       .card{padding:52px 16px 16px}
@@ -203,8 +282,11 @@
     </section>
   </main>
 
+  <div class="toast-wrap" id="toastWrap"></div>
+
   <script>
     const contentArea = document.getElementById("contentArea");
+    const toastWrap = document.getElementById("toastWrap");
     const loggedUser = sessionStorage.getItem("loggedUser") || "";
 
     function escapeHtml(text){
@@ -214,6 +296,17 @@
         .replaceAll(">","&gt;")
         .replaceAll('"',"&quot;")
         .replaceAll("'","&#039;");
+    }
+
+    function showToast(type, title, text) {
+      const toast = document.createElement("div");
+      toast.className = `toast toast--${type}`;
+      toast.innerHTML = `
+        <span class="toast-title">${title}</span>
+        <span class="toast-text">${text}</span>
+      `;
+      toastWrap.appendChild(toast);
+      setTimeout(() => toast.remove(), 3200);
     }
 
     function formatCore(core){
@@ -268,7 +361,7 @@
         contentArea.innerHTML = `
           <div class="requests">
             ${requests.map(item => `
-              <div class="request-card">
+              <div class="request-card" data-ticket-id="${item.id}">
                 <div class="request-top">
                   <h2 class="request-game">${escapeHtml(item.game_title)}</h2>
 
@@ -295,8 +388,13 @@
                   </div>
 
                   <div class="request-block" style="grid-column:1 / -1;">
-                    <span class="request-label">Sua observação</span>
+                    <span class="request-label">Sua observação inicial</span>
                     <span class="request-value">${escapeHtml(item.notes || "Sem observações")}</span>
+                  </div>
+
+                  <div class="request-block" style="grid-column:1 / -1;">
+                    <span class="request-label">Seu último complemento</span>
+                    <span class="request-value">${escapeHtml(item.user_followup || "Nenhum complemento enviado")}</span>
                   </div>
 
                   <div class="request-block" style="grid-column:1 / -1;">
@@ -304,13 +402,74 @@
                     <span class="request-value">${escapeHtml(item.admin_reply || "Sem resposta ainda")}</span>
                   </div>
                 </div>
+
+                ${item.status === "pending_info" ? `
+                  <div class="followup-box">
+                    <div class="field">
+                      <label>Enviar complemento</label>
+                      <textarea class="followup-text" maxlength="1000" placeholder="Digite aqui as informações adicionais solicitadas pelo admin..."></textarea>
+                    </div>
+
+                    <div class="followup-actions">
+                      <button type="button" class="btn btn--primary followup-send">Reenviar ticket</button>
+                    </div>
+                  </div>
+                ` : ""}
               </div>
             `).join("")}
           </div>
         `;
+
+        bindFollowupActions();
       }catch(error){
         contentArea.innerHTML = `<div class="error">${escapeHtml(error.message || "Erro ao carregar tickets.")}</div>`;
       }
+    }
+
+    function bindFollowupActions() {
+      document.querySelectorAll(".followup-send").forEach(button => {
+        button.addEventListener("click", async () => {
+          const card = button.closest("[data-ticket-id]");
+          const requestId = Number(card.dataset.ticketId);
+          const followupText = card.querySelector(".followup-text")?.value.trim() || "";
+
+          if (!followupText) {
+            showToast("error", "Complemento não enviado", "Digite as informações solicitadas.");
+            return;
+          }
+
+          button.disabled = true;
+          button.textContent = "Enviando...";
+
+          try {
+            const response = await fetch("/api/my-request-reply", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                username: loggedUser,
+                request_id: requestId,
+                user_followup: followupText
+              })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+              throw new Error(data.message || "Erro ao reenviar ticket.");
+            }
+
+            showToast("success", "Complemento enviado", "Seu ticket voltou para análise do admin.");
+            await loadMyTickets();
+          } catch (error) {
+            showToast("error", "Erro ao enviar", error.message || "Não foi possível reenviar o ticket.");
+          } finally {
+            button.disabled = false;
+            button.textContent = "Reenviar ticket";
+          }
+        });
+      });
     }
 
     loadMyTickets();
