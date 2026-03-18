@@ -1,20 +1,34 @@
-window.SITE_CONFIG = {
-  // Cole aqui a URL do arquivo do jogo se quiser carregamento automático.
-  // Exemplos aceitos pelo core de PlayStation: .7z, .zip, .cue, .bin, .chd, .pbp, .m3u
-  ROM_URL: "",
-
-  // Opcional. Para jogos dos EUA, normalmente é scph5501.bin.
-  BIOS_URL: "",
-
-  // Nome mostrado na interface.
-  GAME_TITLE: "",
-
-  // true = carrega e já entra no emulador
+window.DRAGPLAY_CONFIG = {
+  DATA_PATH: "./data/",
   AUTO_START: true,
 
-  // Pode deixar 'psx' para usar pcsx_rearmed.
-  CORE: "psx",
+  SYSTEMS: {
+    psx: {
+      label: "PlayStation",
+      core: "psx",
+      biosUrl: "",
+      extensions: [
+        "cue", "chd", "pbp", "m3u", "ccd", "bin", "img", "mdf", "toc", "cbn"
+      ],
+      archiveHints: [
+        ".ps1.zip", ".psx.zip", ".cue.zip", ".bin.zip", ".chd.zip", ".pbp.zip",
+        ".m3u.zip", ".ccd.zip", ".img.zip", ".mdf.zip", ".toc.zip", ".cbn.zip",
+        ".ps1.7z", ".psx.7z", ".cue.7z", ".bin.7z", ".chd.7z", ".pbp.7z",
+        ".m3u.7z", ".ccd.7z", ".img.7z", ".mdf.7z", ".toc.7z", ".cbn.7z"
+      ]
+    },
 
-  // CDN estável oficial do EmulatorJS.
-  DATA_PATH: "./data/"
+    n64: {
+      label: "Nintendo 64",
+      core: "n64",
+      biosUrl: "",
+      extensions: [
+        "z64", "n64", "v64"
+      ],
+      archiveHints: [
+        ".n64.zip", ".z64.zip", ".v64.zip",
+        ".n64.7z", ".z64.7z", ".v64.7z"
+      ]
+    }
+  }
 };
