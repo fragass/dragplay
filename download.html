@@ -93,10 +93,23 @@
       background:rgba(255,255,255,.01);
     }
 
+    .game-top{
+      position:relative;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding-right:0;
+    }
+
+    .game-top-right{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-shrink:0;
+    }
+
     .platform-badge{
-      position:absolute;
-      top:12px;
-      right:12px;
       padding:4px 8px;
       border-radius:999px;
       font-size:11px;
@@ -106,6 +119,30 @@
       background:rgba(106,0,255,.14);
       border:1px solid rgba(106,0,255,.28);
       user-select:none;
+      white-space:nowrap;
+    }
+
+    .download-counter{
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      min-height:24px;
+      padding:3px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      color:#bfbfbf;
+      font-size:11px;
+      white-space:nowrap;
+      user-select:none;
+    }
+
+    .download-counter svg{
+      width:12px;
+      height:12px;
+      fill:currentColor;
+      opacity:.9;
+      flex-shrink:0;
     }
 
     .game-title{
@@ -116,7 +153,7 @@
       letter-spacing:.4px;
       display:flex;
       align-items:center;
-      padding-right:64px;
+      min-width:0;
     }
 
     .options{
@@ -243,13 +280,14 @@
         gap:12px;
       }
 
-      .platform-badge{
-        top:10px;
-        right:10px;
+      .game-top{
+        flex-direction:column;
+        align-items:flex-start;
       }
 
-      .game-title{
-        padding-right:56px;
+      .game-top-right{
+        width:100%;
+        justify-content:flex-start;
       }
     }
   </style>
@@ -268,7 +306,7 @@
   </main>
 
   <span style="position:fixed; bottom:10px; left:10px; opacity:.6; font-size:11px; z-index:999;">
-v0.9.1.2026.03.17
+    v0.9.0.2026.03.16
   </span>
 
   <script>
@@ -301,15 +339,81 @@ v0.9.1.2026.03.17
       return normalized === "n64" ? "Download .z64" : "Download .cue";
     }
 
-    function buildButton(url, text, extraClass = "", platform = "PS1", title = ""){
+    function formatCount(value){
+      const number = Number(value || 0);
+      return Number.isFinite(number) ? number.toLocaleString("pt-BR") : "0";
+    }
+
+    function buildCounter(count){
+      return `
+        <span class="download-counter" title="Total de cliques em download">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M.5 9.9v3.6A1.5 1.5 0 0 0 2 15h12a1.5 1.5 0 0 0 1.5-1.5V9.9a.5.5 0 0 0-1 0v3.6a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5V9.9a.5.5 0 0 0-1 0z"/>
+            <path d="M7.646 10.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 9.293V1.5a.5.5 0 0 0-1 0v7.793L5.354 7.146a.5.5 0 1 0-.708.708l3 3z"/>
+          </svg>
+          <span>${formatCount(count)}</span>
+        </span>
+      `;
+    }
+
+    function buildButton(url, text, extraClass = "", gameId = "", platform = "PS1", title = ""){
       if(!url){
         return `<span class="btn ${extraClass} btn--disabled">${text}</span>`;
       }
 
       const safePlatform = escapeHtml(platform);
       const safeTitle = escapeHtml(title);
+      const safeGameId = escapeHtml(String(gameId || ""));
 
-      return `<a class="btn ${extraClass}" href="${url}" data-platform="${safePlatform}" data-title="${safeTitle}">${text}</a>`;
+      return `<a class="btn ${extraClass}" href="${url}" data-game-id="${safeGameId}" data-platform="${safePlatform}" data-title="${safeTitle}">${text}</a>`;
+    }
+
+    async function registerClick(gameId){
+      if (!gameId) return null;
+
+      try{
+        const response = await fetch("/api/game-click", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            game_id: Number(gameId)
+          })
+        });
+
+        if (!response.ok) return null;
+
+        const data = await response.json();
+        if (!data?.success) return null;
+
+        return Number(data.download_count || 0);
+      }catch{
+        return null;
+      }
+    }
+
+    function bindDownloadLinks(){
+      gamesContainer.querySelectorAll("a[data-game-id]").forEach(link => {
+        link.addEventListener("click", async () => {
+          const gameId = link.dataset.gameId;
+          const platform = normalizePlatform(link.dataset.platform);
+          const title = String(link.dataset.title || "").trim();
+
+          sessionStorage.setItem("dragplay_last_platform", platform);
+          sessionStorage.setItem("dragplay_last_title", title);
+          sessionStorage.setItem("dragplay_flow_source", "downloads");
+
+          const nextCount = await registerClick(gameId);
+          if (nextCount !== null) {
+            const gameCard = link.closest(".game");
+            const counterValue = gameCard?.querySelector("[data-counter-value]");
+            if (counterValue) {
+              counterValue.textContent = formatCount(nextCount);
+            }
+          }
+        });
+      });
     }
 
     function renderGames(games){
@@ -325,16 +429,28 @@ v0.9.1.2026.03.17
 
         return `
           <div class="game">
-            <span class="platform-badge">${platform}</span>
+            <div class="game-top">
+              <h2 class="game-title">
+                <span class="status-dot ${statusClass}"></span>
+                ${escapeHtml(game.title)}
+              </h2>
 
-            <h2 class="game-title">
-              <span class="status-dot ${statusClass}"></span>
-              ${escapeHtml(game.title)}
-            </h2>
+              <div class="game-top-right">
+                <span class="platform-badge">${platform}</span>
+
+                <span class="download-counter" title="Total de cliques em download">
+                  <svg viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M.5 9.9v3.6A1.5 1.5 0 0 0 2 15h12a1.5 1.5 0 0 0 1.5-1.5V9.9a.5.5 0 0 0-1 0v3.6a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5V9.9a.5.5 0 0 0-1 0z"/>
+                    <path d="M7.646 10.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 9.293V1.5a.5.5 0 0 0-1 0v7.793L5.354 7.146a.5.5 0 1 0-.708.708l3 3z"/>
+                  </svg>
+                  <span data-counter-value>${formatCount(game.download_count)}</span>
+                </span>
+              </div>
+            </div>
 
             <div class="options">
-              ${buildButton(game.zip_url, "Download .zip", "", platform, game.title)}
-              ${buildButton(game.cue_url, secondaryLabel, "btn--ghost", platform, game.title)}
+              ${buildButton(game.zip_url, "Download .zip", "", game.id, platform, game.title)}
+              ${buildButton(game.cue_url, secondaryLabel, "btn--ghost", game.id, platform, game.title)}
             </div>
 
             <div class="meta">Google Drive</div>
@@ -342,16 +458,7 @@ v0.9.1.2026.03.17
         `;
       }).join("");
 
-      gamesContainer.querySelectorAll("a[data-platform]").forEach(link => {
-        link.addEventListener("click", () => {
-          const platform = normalizePlatform(link.dataset.platform);
-          const title = String(link.dataset.title || "").trim();
-
-          sessionStorage.setItem("dragplay_last_platform", platform);
-          sessionStorage.setItem("dragplay_last_title", title);
-          sessionStorage.setItem("dragplay_flow_source", "downloads");
-        });
-      });
+      bindDownloadLinks();
     }
 
     async function loadGames(){
