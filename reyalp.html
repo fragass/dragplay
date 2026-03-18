@@ -127,7 +127,8 @@
 
     .download-top,
     .request-top,
-    .tutorial-top{
+    .tutorial-top,
+    .admin-top{
       font-size:14px;
       text-decoration:none;
       color:#b8b8b8;
@@ -141,7 +142,8 @@
 
     .download-top:hover,
     .request-top:hover,
-    .tutorial-top:hover{
+    .tutorial-top:hover,
+    .admin-top:hover{
       color:#fff;
       background:rgba(255,255,255,.05);
     }
@@ -425,7 +427,6 @@
     }
 
     .field input,
-    .field select,
     .field textarea{
       width:100%;
       border-radius:10px;
@@ -437,42 +438,35 @@
       transition:.15s;
     }
 
-.field input,
-.field textarea{
-  width:100%;
-  border-radius:10px;
-  border:1px solid rgba(255,255,255,.08);
-  background:#0d0d12;
-  color:#e6e6e6;
-  padding:12px 14px;
-  outline:none;
-  transition:.15s;
-}
+    .field select{
+      width:100%;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.08);
+      background:#0d0d12;
+      color:#e6e6e6;
+      padding:12px 38px 12px 14px;
+      outline:none;
+      transition:.15s;
+      appearance:none;
+      -webkit-appearance:none;
+      -moz-appearance:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20'%3E%3Cpath fill='%23b8b8b8' d='M5 7l5 6 5-6z'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;
+      background-position:right 14px center;
+      background-size:12px;
+    }
 
-.field select{
-  width:100%;
-  border-radius:10px;
-  border:1px solid rgba(255,255,255,.08);
-  background:#0d0d12;
-  color:#e6e6e6;
-  padding:12px 38px 12px 14px;
-  outline:none;
-  transition:.15s;
-
-  appearance:none;
-  -webkit-appearance:none;
-  -moz-appearance:none;
-
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20'%3E%3Cpath fill='%23b8b8b8' d='M5 7l5 6 5-6z'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;
-  background-position:right 14px center;
-  background-size:12px;
-}
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus{
+      border-color:rgba(106,0,255,.65);
+      background:#0f0f16;
+    }
 
     .field textarea{
-  height:90px;
-  resize:none;
-}
+      height:90px;
+      resize:none;
+    }
 
     .request-actions{
       display:flex;
@@ -571,7 +565,8 @@
 
       .download-top,
       .request-top,
-      .tutorial-top{
+      .tutorial-top,
+      .admin-top{
         font-size:13px;
         padding:6px 9px;
       }
@@ -698,6 +693,7 @@
           <a class="download-top" href="./download.html">Downloads</a>
           <button class="request-top" id="openRequestBtn" type="button">Solicitar</button>
           <button class="tutorial-top" id="openTutorialBtn" type="button">Tutorial</button>
+          <button class="admin-top hidden" id="openAdminBtn" type="button">Tickets</button>
         </div>
 
         <div class="tip-box"></div>
@@ -863,7 +859,7 @@
   <div class="toast-wrap" id="toastWrap"></div>
 
   <span style="position:fixed; bottom:10px; left:10px; opacity:.6; font-size:11px; z-index:999;">
-    v0.9.1.2026.03.17
+    v0.9.0.2026.03.16
   </span>
 
   <script>
@@ -883,6 +879,12 @@
     const requestNotes = document.getElementById("requestNotes");
     const submitRequestBtn = document.getElementById("submitRequestBtn");
     const toastWrap = document.getElementById("toastWrap");
+
+    const openAdminBtn = document.getElementById("openAdminBtn");
+    const loggedUser =
+      sessionStorage.getItem("loggedUser") ||
+      sessionStorage.getItem("user") ||
+      "";
 
     function showToast(type, title, text) {
       const toast = document.createElement("div");
@@ -928,12 +930,29 @@
       requestCore.value = "";
     }
 
+    async function checkAdminVisibility() {
+      if (!loggedUser) return;
+
+      try {
+        const response = await fetch(`/api/admin-check?username=${encodeURIComponent(loggedUser)}`);
+        const data = await response.json();
+
+        if (response.ok && data.success && data.isAdmin) {
+          openAdminBtn.classList.remove("hidden");
+        }
+      } catch {}
+    }
+
     openTutorialBtn.addEventListener("click", openTutorial);
     closeTutorialBtn.addEventListener("click", closeTutorial);
 
     openRequestBtn.addEventListener("click", openRequest);
     closeRequestBtn.addEventListener("click", closeRequest);
     cancelRequestBtn.addEventListener("click", closeRequest);
+
+    openAdminBtn.addEventListener("click", () => {
+      window.location.href = "./admin-requests.html";
+    });
 
     tutorialOverlay.addEventListener("click", (event) => {
       if (event.target === tutorialOverlay) {
@@ -964,11 +983,7 @@
       const gameTitle = String(requestGameTitle.value || "").trim();
       const core = String(requestCore.value || "").trim();
       const notes = String(requestNotes.value || "").trim();
-      const requesterName =
-        sessionStorage.getItem("user") ||
-        sessionStorage.getItem("loggedUser") ||
-        sessionStorage.getItem("username") ||
-        "";
+      const requesterName = loggedUser;
 
       if (!gameTitle) {
         showToast("error", "Solicitação não enviada", "Informe o nome do jogo.");
@@ -1015,6 +1030,8 @@
         submitRequestBtn.textContent = "Enviar";
       }
     });
+
+    checkAdminVisibility();
   </script>
 
   <script src="./config.js"></script>
