@@ -86,14 +86,6 @@
       display:none !important;
     }
 
-    .eyebrow{
-      margin:0;
-      font-size:12px;
-      letter-spacing:2px;
-      color:#8a8a8a;
-      text-transform:uppercase;
-    }
-
     .panel{
       position:relative;
       width:100%;
@@ -139,6 +131,11 @@
       background:transparent;
       border:none;
       cursor:pointer;
+      position:relative;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
     }
 
     .download-top:hover,
@@ -150,8 +147,24 @@
       background:rgba(255,255,255,.05);
     }
 
-    .tip-box{
+    .ticket-badge{
+      min-width:18px;
+      height:18px;
+      padding:0 6px;
+      border-radius:999px;
       display:none;
+      align-items:center;
+      justify-content:center;
+      font-size:10px;
+      font-weight:700;
+      color:#fff;
+      background:#6a00ff;
+      box-shadow:0 0 10px rgba(106,0,255,.35);
+      line-height:1;
+    }
+
+    .ticket-badge.is-visible{
+      display:inline-flex;
     }
 
     .dropzone{
@@ -687,13 +700,14 @@
       <div class="panel">
         <div class="top-actions">
           <a class="download-top" href="./download.html">Downloads</a>
-          <button class="tutorial-top" id="openTutorialBtn" type="button">Tutorial</button>
           <button class="request-top" id="openRequestBtn" type="button">Solicitar</button>
-          <button class="mytickets-top" id="openMyTicketsBtn" type="button">Meus Tickets</button>
-          <button class="admin-top hidden" id="openAdminBtn" type="button">Painel de Tickets</button>
+          <button class="mytickets-top" id="openMyTicketsBtn" type="button">
+            Meus Tickets
+            <span class="ticket-badge" id="myTicketsBadge">0</span>
+          </button>
+          <button class="tutorial-top" id="openTutorialBtn" type="button">Tutorial</button>
+          <button class="admin-top hidden" id="openAdminBtn" type="button">Tickets</button>
         </div>
-
-        <div class="tip-box"></div>
 
         <label
           id="dropZone"
@@ -715,54 +729,6 @@
             <span class="dropzone__hint">.zip, .cue, .bin, .z64, .n64, .v64</span>
           </div>
         </label>
-
-        <div class="divider"><span>ou</span></div>
-
-        <div class="remote-box">
-          <label for="romUrlInput">URL remota do arquivo</label>
-          <div class="inline-fields">
-            <input
-              id="romUrlInput"
-              type="url"
-              placeholder="https://seu-host.com/arquivo.cue"
-              autocomplete="off"
-            />
-            <button id="loadRemoteBtn" class="btn btn--primary" type="button">Carregar</button>
-          </div>
-          <p class="subtle">Também funciona com URL remota.</p>
-        </div>
-
-        <details class="advanced">
-          <summary>BIOS / opções avançadas</summary>
-          <div class="advanced__content">
-            <label for="biosUrlInput">URL remota da BIOS</label>
-            <input
-              id="biosUrlInput"
-              type="url"
-              placeholder="https://seu-host.com/scph5501.bin"
-              autocomplete="off"
-            />
-
-            <label class="file-inline" for="biosFileInput">
-              <span>ou selecione a BIOS local</span>
-              <input id="biosFileInput" type="file" accept=".bin" />
-            </label>
-
-            <label class="toggle">
-              <input id="autostartToggle" type="checkbox" checked />
-              <span>Iniciar automaticamente quando terminar de carregar</span>
-            </label>
-          </div>
-        </details>
-
-        <div class="current-selection" id="currentSelection">
-          <span>Nenhum arquivo selecionado.</span>
-        </div>
-
-        <div class="actions">
-          <button id="startBtn" class="btn btn--primary" type="button" disabled>Play</button>
-          <button id="resetBtn" class="btn btn--ghost" type="button">Reset</button>
-        </div>
 
         <p class="notice" id="noticeBox">
           Para o sistema reconhecer o core correto, baixe a ROM pela página Downloads. Arquivos externos podem não funcionar adequadamente. Se o .zip não funcionar, teste o .cue ou .z64.
@@ -879,6 +845,7 @@
 
     const openAdminBtn = document.getElementById("openAdminBtn");
     const openMyTicketsBtn = document.getElementById("openMyTicketsBtn");
+    const myTicketsBadge = document.getElementById("myTicketsBadge");
 
     const loggedUser =
       sessionStorage.getItem("loggedUser") ||
@@ -938,6 +905,27 @@
 
         if (response.ok && data.success && data.isAdmin) {
           openAdminBtn.classList.remove("hidden");
+        }
+      } catch {}
+    }
+
+    async function loadMyTicketsBadge() {
+      if (!loggedUser) return;
+
+      try {
+        const response = await fetch(`/api/my-requests-badge?username=${encodeURIComponent(loggedUser)}`);
+        const data = await response.json();
+
+        if (!response.ok || !data.success) return;
+
+        const count = Number(data.count || 0);
+
+        if (count > 0) {
+          myTicketsBadge.textContent = count > 99 ? "99+" : String(count);
+          myTicketsBadge.classList.add("is-visible");
+        } else {
+          myTicketsBadge.textContent = "0";
+          myTicketsBadge.classList.remove("is-visible");
         }
       } catch {}
     }
@@ -1031,6 +1019,7 @@
         showToast("success", "Solicitação enviada", "Sua solicitação foi enviada com sucesso.");
         resetRequestForm();
         closeRequest();
+        loadMyTicketsBadge();
       } catch (error) {
         showToast("error", "Erro ao enviar", error.message || "Não foi possível enviar sua solicitação.");
       } finally {
@@ -1040,6 +1029,7 @@
     });
 
     checkAdminVisibility();
+    loadMyTicketsBadge();
   </script>
 
   <script src="./config.js"></script>
