@@ -38,6 +38,7 @@
 
     button,
     input,
+    textarea,
     select{
       font:inherit;
     }
@@ -121,9 +122,11 @@
       display:flex;
       gap:8px;
       z-index:2;
+      flex-wrap:wrap;
     }
 
     .download-top,
+    .request-top,
     .tutorial-top{
       font-size:14px;
       text-decoration:none;
@@ -137,6 +140,7 @@
     }
 
     .download-top:hover,
+    .request-top:hover,
     .tutorial-top:hover{
       color:#fff;
       background:rgba(255,255,255,.05);
@@ -320,7 +324,7 @@
       color:#fff;
     }
 
-    .tutorial-overlay{
+    .overlay{
       position:fixed;
       inset:0;
       background:rgba(0,0,0,.78);
@@ -334,12 +338,12 @@
       transition:opacity .18s ease;
     }
 
-    .tutorial-overlay.is-open{
+    .overlay.is-open{
       opacity:1;
       pointer-events:auto;
     }
 
-    .tutorial-modal{
+    .overlay-modal{
       position:relative;
       width:min(100%, 960px);
       background:#111116;
@@ -349,7 +353,7 @@
       box-shadow:0 20px 60px rgba(0,0,0,.45);
     }
 
-    .tutorial-close{
+    .overlay-close{
       position:absolute;
       top:12px;
       right:12px;
@@ -368,7 +372,7 @@
       z-index:2;
     }
 
-    .tutorial-close:hover{
+    .overlay-close:hover{
       background:rgba(255,255,255,.08);
       color:#fff;
     }
@@ -386,6 +390,124 @@
       height:100%;
       display:block;
       background:#000;
+    }
+
+    .request-form{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      padding-top:10px;
+    }
+
+    .request-title{
+      margin:0 42px 4px 0;
+      font-size:18px;
+      font-weight:600;
+      color:#f2f2f2;
+    }
+
+    .request-subtitle{
+      margin:0;
+      font-size:13px;
+      color:#8d8d8d;
+      line-height:1.5;
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .field label{
+      font-size:12px;
+      color:#b8b8b8;
+    }
+
+    .field input,
+    .field select,
+    .field textarea{
+      width:100%;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.08);
+      background:#0d0d12;
+      color:#e6e6e6;
+      padding:12px 14px;
+      outline:none;
+      transition:.15s;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus{
+      border-color:rgba(106,0,255,.65);
+      background:#0f0f16;
+    }
+
+    .field textarea{
+      min-height:120px;
+      resize:vertical;
+    }
+
+    .request-actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      margin-top:4px;
+    }
+
+    .toast-wrap{
+      position:fixed;
+      right:16px;
+      bottom:16px;
+      z-index:10000;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      pointer-events:none;
+    }
+
+    .toast{
+      min-width:280px;
+      max-width:420px;
+      padding:14px 16px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.08);
+      background:#111116;
+      color:#e6e6e6;
+      box-shadow:0 18px 40px rgba(0,0,0,.35);
+      opacity:0;
+      transform:translateY(10px);
+      animation:toastIn .18s ease forwards;
+    }
+
+    .toast--success{
+      border-color:rgba(60,255,92,.18);
+    }
+
+    .toast--error{
+      border-color:rgba(255,77,77,.18);
+    }
+
+    .toast-title{
+      display:block;
+      font-size:13px;
+      font-weight:600;
+      margin-bottom:4px;
+    }
+
+    .toast-text{
+      display:block;
+      font-size:12px;
+      line-height:1.5;
+      color:#b8b8b8;
+    }
+
+    @keyframes toastIn{
+      to{
+        opacity:1;
+        transform:translateY(0);
+      }
     }
 
     @media (max-width: 900px){
@@ -423,6 +545,7 @@
       }
 
       .download-top,
+      .request-top,
       .tutorial-top{
         font-size:13px;
         padding:6px 9px;
@@ -466,17 +589,33 @@
         padding:10px;
       }
 
-      .tutorial-overlay{
+      .overlay{
         padding:12px;
       }
 
-      .tutorial-modal{
+      .overlay-modal{
         padding:12px;
       }
 
-      .tutorial-close{
+      .overlay-close{
         top:8px;
         right:8px;
+      }
+
+      .request-actions{
+        flex-direction:column;
+      }
+
+      .toast-wrap{
+        left:12px;
+        right:12px;
+        bottom:12px;
+      }
+
+      .toast{
+        min-width:0;
+        max-width:none;
+        width:100%;
       }
     }
 
@@ -532,6 +671,7 @@
       <div class="panel">
         <div class="top-actions">
           <a class="download-top" href="./download.html">Downloads</a>
+          <button class="request-top" id="openRequestBtn" type="button">Solicitar</button>
           <button class="tutorial-top" id="openTutorialBtn" type="button">Tutorial</button>
         </div>
 
@@ -633,9 +773,9 @@
     </section>
   </main>
 
-  <div class="tutorial-overlay" id="tutorialOverlay" aria-hidden="true">
-    <div class="tutorial-modal" id="tutorialModal">
-      <button class="tutorial-close" id="closeTutorialBtn" type="button" aria-label="Fechar tutorial">✕</button>
+  <div class="overlay" id="tutorialOverlay" aria-hidden="true">
+    <div class="overlay-modal">
+      <button class="overlay-close" id="closeTutorialBtn" type="button" aria-label="Fechar tutorial">✕</button>
       <div class="tutorial-video-wrap">
         <video
           id="tutorialVideo"
@@ -648,15 +788,93 @@
     </div>
   </div>
 
+  <div class="overlay" id="requestOverlay" aria-hidden="true">
+    <div class="overlay-modal">
+      <button class="overlay-close" id="closeRequestBtn" type="button" aria-label="Fechar solicitação">✕</button>
+
+      <form id="requestForm" class="request-form">
+        <h2 class="request-title">Solicitar novo título</h2>
+        <p class="request-subtitle">Envie sua solicitação de jogo para análise.</p>
+
+        <div class="field">
+          <label for="requestGameTitle">Nome do jogo</label>
+          <input
+            id="requestGameTitle"
+            name="game_title"
+            type="text"
+            maxlength="120"
+            placeholder="Ex.: Dino Crisis"
+            required
+          />
+        </div>
+
+        <div class="field">
+          <label for="requestCore">CORE</label>
+          <select id="requestCore" name="core" required>
+            <option value="">Escolha o CORE</option>
+            <option value="psx">Playstation</option>
+            <option value="n64">Nintendo64</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="requestNotes">Observação</label>
+          <textarea
+            id="requestNotes"
+            name="notes"
+            maxlength="1000"
+            placeholder="Ex.: versão USA, idioma PT-BR, jogo em português, preferência por versão específica..."
+          ></textarea>
+        </div>
+
+        <div class="request-actions">
+          <button type="button" class="btn btn--ghost" id="cancelRequestBtn">Cancelar</button>
+          <button type="submit" class="btn btn--primary" id="submitRequestBtn">Enviar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast-wrap" id="toastWrap"></div>
+
   <span style="position:fixed; bottom:10px; left:10px; opacity:.6; font-size:11px; z-index:999;">
-v0.9.1.2026.03.17
+    v0.9.0.2026.03.16
   </span>
 
   <script>
     const tutorialOverlay = document.getElementById("tutorialOverlay");
+    const requestOverlay = document.getElementById("requestOverlay");
+
     const openTutorialBtn = document.getElementById("openTutorialBtn");
     const closeTutorialBtn = document.getElementById("closeTutorialBtn");
     const tutorialVideo = document.getElementById("tutorialVideo");
+
+    const openRequestBtn = document.getElementById("openRequestBtn");
+    const closeRequestBtn = document.getElementById("closeRequestBtn");
+    const cancelRequestBtn = document.getElementById("cancelRequestBtn");
+    const requestForm = document.getElementById("requestForm");
+    const requestGameTitle = document.getElementById("requestGameTitle");
+    const requestCore = document.getElementById("requestCore");
+    const requestNotes = document.getElementById("requestNotes");
+    const submitRequestBtn = document.getElementById("submitRequestBtn");
+    const toastWrap = document.getElementById("toastWrap");
+
+    function showToast(type, title, text) {
+      const toast = document.createElement("div");
+      toast.className = `toast toast--${type}`;
+      toast.innerHTML = `
+        <span class="toast-title">${title}</span>
+        <span class="toast-text">${text}</span>
+      `;
+
+      toastWrap.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(10px)";
+        setTimeout(() => toast.remove(), 180);
+      }, 3200);
+    }
 
     function openTutorial() {
       tutorialOverlay.classList.add("is-open");
@@ -669,8 +887,28 @@ v0.9.1.2026.03.17
       tutorialVideo.pause();
     }
 
+    function openRequest() {
+      requestOverlay.classList.add("is-open");
+      requestOverlay.setAttribute("aria-hidden", "false");
+      setTimeout(() => requestGameTitle.focus(), 50);
+    }
+
+    function closeRequest() {
+      requestOverlay.classList.remove("is-open");
+      requestOverlay.setAttribute("aria-hidden", "true");
+    }
+
+    function resetRequestForm() {
+      requestForm.reset();
+      requestCore.value = "";
+    }
+
     openTutorialBtn.addEventListener("click", openTutorial);
     closeTutorialBtn.addEventListener("click", closeTutorial);
+
+    openRequestBtn.addEventListener("click", openRequest);
+    closeRequestBtn.addEventListener("click", closeRequest);
+    cancelRequestBtn.addEventListener("click", closeRequest);
 
     tutorialOverlay.addEventListener("click", (event) => {
       if (event.target === tutorialOverlay) {
@@ -678,9 +916,78 @@ v0.9.1.2026.03.17
       }
     });
 
+    requestOverlay.addEventListener("click", (event) => {
+      if (event.target === requestOverlay) {
+        closeRequest();
+      }
+    });
+
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && tutorialOverlay.classList.contains("is-open")) {
-        closeTutorial();
+      if (event.key === "Escape") {
+        if (tutorialOverlay.classList.contains("is-open")) {
+          closeTutorial();
+        }
+        if (requestOverlay.classList.contains("is-open")) {
+          closeRequest();
+        }
+      }
+    });
+
+    requestForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const gameTitle = String(requestGameTitle.value || "").trim();
+      const core = String(requestCore.value || "").trim();
+      const notes = String(requestNotes.value || "").trim();
+      const requesterName =
+        sessionStorage.getItem("user") ||
+        sessionStorage.getItem("loggedUser") ||
+        sessionStorage.getItem("username") ||
+        "";
+
+      if (!gameTitle) {
+        showToast("error", "Solicitação não enviada", "Informe o nome do jogo.");
+        requestGameTitle.focus();
+        return;
+      }
+
+      if (!core) {
+        showToast("error", "Solicitação não enviada", "Escolha o CORE desejado.");
+        requestCore.focus();
+        return;
+      }
+
+      submitRequestBtn.disabled = true;
+      submitRequestBtn.textContent = "Enviando...";
+
+      try {
+        const response = await fetch("/api/game-requests", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            requester_name: requesterName,
+            game_title: gameTitle,
+            core,
+            notes
+          })
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || "Não foi possível enviar a solicitação.");
+        }
+
+        showToast("success", "Solicitação enviada", "Sua solicitação foi enviada com sucesso.");
+        resetRequestForm();
+        closeRequest();
+      } catch (error) {
+        showToast("error", "Erro ao enviar", error.message || "Não foi possível enviar sua solicitação.");
+      } finally {
+        submitRequestBtn.disabled = false;
+        submitRequestBtn.textContent = "Enviar";
       }
     });
   </script>
