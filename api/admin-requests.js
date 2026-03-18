@@ -6,7 +6,7 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({
       success: false,
       message: "Supabase não configurado"
-    });
+    });h
   }
 
   try {
@@ -27,7 +27,7 @@ module.exports = async function handler(req, res) {
 
     const { data: adminUser, error: adminError } = await supabase
       .from("pusers")
-      .select("username, its_admin")
+      .select("username, is_admin")
       .eq("username", username)
       .maybeSingle();
 
@@ -38,7 +38,7 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    if (!adminUser?.its_admin) {
+    if (!adminUser?.is_admin) {
       return res.status(403).json({
         success: false,
         message: "Acesso negado"
