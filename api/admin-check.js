@@ -31,7 +31,7 @@ module.exports = async function handler(req, res) {
 
     const { data, error } = await supabase
       .from("pusers")
-      .select("username, its_admin")
+      .select("username, is_admin")
       .eq("username", username)
       .maybeSingle();
 
@@ -44,7 +44,7 @@ module.exports = async function handler(req, res) {
 
     return res.status(200).json({
       success: true,
-      isAdmin: !!data?.its_admin
+      isAdmin: !!data?.is_admin
     });
   } catch (err) {
     return res.status(500).json({
