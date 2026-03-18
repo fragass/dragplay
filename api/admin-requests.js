@@ -27,7 +27,7 @@ module.exports = async function handler(req, res) {
 
     const { data: adminUser, error: adminError } = await supabase
       .from("pusers")
-      .select("username, is_admin")
+      .select("username, its_admin")
       .eq("username", username)
       .maybeSingle();
 
@@ -38,7 +38,7 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    if (!adminUser?.is_admin) {
+    if (!adminUser?.its_admin) {
       return res.status(403).json({
         success: false,
         message: "Acesso negado"
@@ -48,7 +48,7 @@ module.exports = async function handler(req, res) {
     if (req.method === "GET") {
       const { data, error } = await supabase
         .from("game_requests")
-        .select("id, requester_name, game_title, core, notes, status, admin_reply, reviewed_by, reviewed_at, created_at")
+        .select("id, requester_name, game_title, core, notes, user_followup, status, admin_reply, reviewed_by, reviewed_at, created_at")
         .eq("status", "pending")
         .order("created_at", { ascending: false });
 
