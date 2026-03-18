@@ -18,7 +18,6 @@ module.exports = async function handler(req, res) {
 
   try {
     const { createClient } = require("@supabase/supabase-js");
-
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const body = req.body || {};
@@ -26,6 +25,13 @@ module.exports = async function handler(req, res) {
     const gameTitle = String(body.game_title || "").trim();
     const core = String(body.core || "").trim().toLowerCase();
     const notes = String(body.notes || "").trim() || null;
+
+    if (!requesterName) {
+      return res.status(400).json({
+        success: false,
+        message: "Usuário não identificado."
+      });
+    }
 
     if (!gameTitle) {
       return res.status(400).json({
@@ -62,7 +68,8 @@ module.exports = async function handler(req, res) {
           requester_name: requesterName,
           game_title: gameTitle,
           core,
-          notes
+          notes,
+          status: "pending"
         }
       ]);
 
