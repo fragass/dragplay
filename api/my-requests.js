@@ -31,7 +31,7 @@ module.exports = async function handler(req, res) {
 
     const { data, error } = await supabase
       .from("game_requests")
-      .select("id, requester_name, game_title, core, notes, user_followup, status, admin_reply, reviewed_by, reviewed_at, created_at")
+      .select("id, requester_name, game_title, core, notes, user_followup, status, admin_reply, user_seen_reply, reviewed_by, reviewed_at, created_at")
       .eq("requester_name", username)
       .order("created_at", { ascending: false });
 
@@ -42,9 +42,22 @@ module.exports = async function handler(req, res) {
       });
     }
 
+    const requests = Array.isArray(data) ? data : [];
+
+    const unseenIds = requests
+      .filter(item => item.admin_reply && item.user_seen_reply === false)
+      .map(item => item.id);
+
+    if (unseenIds.length) {
+      await supabase
+        .from("game_requests")
+        .update({ user_seen_reply: true })
+        .in("id", unseenIds);
+    }
+
     return res.status(200).json({
       success: true,
-      requests: Array.isArray(data) ? data : []
+      requests
     });
   } catch (err) {
     return res.status(500).json({
