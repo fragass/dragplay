@@ -118,9 +118,9 @@
     }
 
     .download-top,
+    .tutorial-top,
     .request-top,
     .mytickets-top,
-    .tutorial-top,
     .admin-top{
       font-size:14px;
       text-decoration:none;
@@ -139,9 +139,9 @@
     }
 
     .download-top:hover,
+    .tutorial-top:hover,
     .request-top:hover,
     .mytickets-top:hover,
-    .tutorial-top:hover,
     .admin-top:hover{
       color:#fff;
       background:rgba(255,255,255,.05);
@@ -579,9 +579,9 @@
       }
 
       .download-top,
+      .tutorial-top,
       .request-top,
       .mytickets-top,
-      .tutorial-top,
       .admin-top{
         font-size:13px;
         padding:6px 9px;
@@ -654,39 +654,6 @@
         width:100%;
       }
     }
-
-    @media (max-height: 720px){
-      .shell{
-        padding:12px;
-      }
-
-      .panel{
-        max-height:calc(100dvh - 24px);
-        padding:48px 14px 14px;
-        gap:12px;
-      }
-
-      .dropzone{
-        min-height:140px;
-        padding:16px;
-      }
-
-      .player-shell{
-        height:calc(100dvh - 24px);
-      }
-
-      .player-topbar{
-        padding:12px 14px;
-      }
-
-      .player-helper{
-        padding:8px 12px;
-      }
-
-      .player-stage{
-        padding:10px;
-      }
-    }
   </style>
 </head>
 <body>
@@ -695,13 +662,12 @@
   <main class="shell" id="appShell">
     <section class="hero" id="heroSection">
       <div class="hero__copy"></div>
-      <div class="status-rail" aria-label="Fluxo de carregamento"></div>
 
       <div class="panel">
         <div class="top-actions">
           <a class="download-top" href="./download.html">Downloads</a>
           <button class="tutorial-top" id="openTutorialBtn" type="button">Tutorial</button>
-          <button class="request-top" id="openRequestBtn" type="button">Solicitar</button>
+          <button class="request-top" id="openRequestBtn" type="button">Solicitar / Reportar</button>
           <button class="mytickets-top" id="openMyTicketsBtn" type="button">
             Meus Tickets
             <span class="ticket-badge" id="myTicketsBadge">0</span>
@@ -739,7 +705,7 @@
     <section class="player-shell hidden" id="playerShell">
       <div class="player-topbar">
         <div>
-          <p class="eyebrow" id="runningSystem">Em execução</p>
+          <p id="runningSystem">Em execução</p>
           <h2 id="gameTitle">Jogo</h2>
         </div>
         <button id="backBtn" class="btn btn--ghost" type="button">Voltar</button>
@@ -774,40 +740,72 @@
 
   <div class="overlay" id="requestOverlay" aria-hidden="true">
     <div class="overlay-modal">
-      <button class="overlay-close" id="closeRequestBtn" type="button" aria-label="Fechar solicitação">✕</button>
+      <button class="overlay-close" id="closeRequestBtn" type="button" aria-label="Fechar ticket">✕</button>
 
       <form id="requestForm" class="request-form">
-        <h2 class="request-title">Solicitar novo título</h2>
-        <p class="request-subtitle">Envie sua solicitação de jogo para análise.</p>
+        <h2 class="request-title">Solicitar / Reportar</h2>
+        <p class="request-subtitle">Envie uma solicitação de jogo ou reporte um problema.</p>
 
         <div class="field">
-          <label for="requestGameTitle">Nome do jogo</label>
-          <input
-            id="requestGameTitle"
-            name="game_title"
-            type="text"
-            maxlength="120"
-            placeholder="Ex.: Dino Crisis"
-            required
-          />
-        </div>
-
-        <div class="field">
-          <label for="requestCore">CORE</label>
-          <select id="requestCore" name="core" required>
-            <option value="">Escolha o CORE</option>
-            <option value="psx">Playstation</option>
-            <option value="n64">Nintendo64</option>
+          <label for="ticketType">Tipo de ticket</label>
+          <select id="ticketType" name="ticket_type" required>
+            <option value="request">Solicitar</option>
+            <option value="report">Reportar</option>
           </select>
         </div>
 
+        <div id="requestFields">
+          <div class="field">
+            <label for="requestGameTitle">Nome do jogo</label>
+            <input
+              id="requestGameTitle"
+              name="game_title"
+              type="text"
+              maxlength="120"
+              placeholder="Ex.: Dino Crisis"
+            />
+          </div>
+
+          <div class="field">
+            <label for="requestCore">CORE</label>
+            <select id="requestCore" name="core">
+              <option value="">Escolha o CORE</option>
+              <option value="psx">Playstation</option>
+              <option value="n64">Nintendo64</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="reportFields" class="hidden">
+          <div class="field">
+            <label for="reportSubject">Assunto</label>
+            <input
+              id="reportSubject"
+              name="report_subject"
+              type="text"
+              maxlength="120"
+              placeholder="Ex.: Link do Crash Bandicoot caiu"
+            />
+          </div>
+
+          <div class="field">
+            <label for="reportCategory">Tipo do problema</label>
+            <select id="reportCategory" name="report_category">
+              <option value="">Escolha o tipo</option>
+              <option value="download_off">Download off</option>
+              <option value="erro_site">Erro no site</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+        </div>
+
         <div class="field">
-          <label for="requestNotes">Observação</label>
+          <label for="requestNotes" id="notesLabel">Observação</label>
           <textarea
             id="requestNotes"
             name="notes"
             maxlength="1000"
-            placeholder="Ex.: versão USA, preferência por idioma ou alguma observação útil..."
+            placeholder="Descreva aqui de forma resumida..."
           ></textarea>
         </div>
 
@@ -837,10 +835,19 @@
     const closeRequestBtn = document.getElementById("closeRequestBtn");
     const cancelRequestBtn = document.getElementById("cancelRequestBtn");
     const requestForm = document.getElementById("requestForm");
+    const submitRequestBtn = document.getElementById("submitRequestBtn");
+
+    const ticketType = document.getElementById("ticketType");
+    const requestFields = document.getElementById("requestFields");
+    const reportFields = document.getElementById("reportFields");
+
     const requestGameTitle = document.getElementById("requestGameTitle");
     const requestCore = document.getElementById("requestCore");
+    const reportSubject = document.getElementById("reportSubject");
+    const reportCategory = document.getElementById("reportCategory");
     const requestNotes = document.getElementById("requestNotes");
-    const submitRequestBtn = document.getElementById("submitRequestBtn");
+    const notesLabel = document.getElementById("notesLabel");
+
     const toastWrap = document.getElementById("toastWrap");
 
     const openAdminBtn = document.getElementById("openAdminBtn");
@@ -859,7 +866,6 @@
         <span class="toast-title">${title}</span>
         <span class="toast-text">${text}</span>
       `;
-
       toastWrap.appendChild(toast);
 
       setTimeout(() => {
@@ -867,6 +873,20 @@
         toast.style.transform = "translateY(10px)";
         setTimeout(() => toast.remove(), 180);
       }, 3200);
+    }
+
+    function syncTicketForm() {
+      const mode = ticketType.value;
+
+      if (mode === "report") {
+        requestFields.classList.add("hidden");
+        reportFields.classList.remove("hidden");
+        notesLabel.textContent = "Observação";
+      } else {
+        requestFields.classList.remove("hidden");
+        reportFields.classList.add("hidden");
+        notesLabel.textContent = "Observação";
+      }
     }
 
     function openTutorial() {
@@ -883,7 +903,8 @@
     function openRequest() {
       requestOverlay.classList.add("is-open");
       requestOverlay.setAttribute("aria-hidden", "false");
-      setTimeout(() => requestGameTitle.focus(), 50);
+      syncTicketForm();
+      setTimeout(() => ticketType.focus(), 50);
     }
 
     function closeRequest() {
@@ -893,7 +914,10 @@
 
     function resetRequestForm() {
       requestForm.reset();
+      ticketType.value = "request";
       requestCore.value = "";
+      reportCategory.value = "";
+      syncTicketForm();
     }
 
     async function checkAdminVisibility() {
@@ -945,52 +969,72 @@
       window.location.href = "./my-requests.html";
     });
 
+    ticketType.addEventListener("change", syncTicketForm);
+
     tutorialOverlay.addEventListener("click", (event) => {
-      if (event.target === tutorialOverlay) {
-        closeTutorial();
-      }
+      if (event.target === tutorialOverlay) closeTutorial();
     });
 
     requestOverlay.addEventListener("click", (event) => {
-      if (event.target === requestOverlay) {
-        closeRequest();
-      }
+      if (event.target === requestOverlay) closeRequest();
     });
 
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
-        if (tutorialOverlay.classList.contains("is-open")) {
-          closeTutorial();
-        }
-        if (requestOverlay.classList.contains("is-open")) {
-          closeRequest();
-        }
+        if (tutorialOverlay.classList.contains("is-open")) closeTutorial();
+        if (requestOverlay.classList.contains("is-open")) closeRequest();
       }
     });
 
     requestForm.addEventListener("submit", async (event) => {
       event.preventDefault();
 
-      const gameTitle = String(requestGameTitle.value || "").trim();
-      const core = String(requestCore.value || "").trim();
-      const notes = String(requestNotes.value || "").trim();
       const requesterName = loggedUser;
-
-      if (!gameTitle) {
-        showToast("error", "Solicitação não enviada", "Informe o nome do jogo.");
-        requestGameTitle.focus();
-        return;
-      }
-
-      if (!core) {
-        showToast("error", "Solicitação não enviada", "Escolha o CORE desejado.");
-        requestCore.focus();
-        return;
-      }
+      const mode = ticketType.value;
 
       if (!requesterName) {
-        showToast("error", "Solicitação não enviada", "Usuário não identificado na sessão.");
+        showToast("error", "Ticket não enviado", "Usuário não identificado na sessão.");
         return;
+      }
+
+      const payload = {
+        requester_name: requesterName,
+        ticket_type: mode,
+        notes: String(requestNotes.value || "").trim()
+      };
+
+      if (mode === "request") {
+        payload.game_title = String(requestGameTitle.value || "").trim();
+        payload.core = String(requestCore.value || "").trim();
+
+        if (!payload.game_title) {
+          showToast("error", "Ticket não enviado", "Informe o nome do jogo.");
+          requestGameTitle.focus();
+          return;
+        }
+
+        if (!payload.core) {
+          showToast("error", "Ticket não enviado", "Escolha o CORE desejado.");
+          requestCore.focus();
+          return;
+        }
+      }
+
+      if (mode === "report") {
+        payload.report_subject = String(reportSubject.value || "").trim();
+        payload.report_category = String(reportCategory.value || "").trim();
+
+        if (!payload.report_subject) {
+          showToast("error", "Ticket não enviado", "Informe o assunto do reporte.");
+          reportSubject.focus();
+          return;
+        }
+
+        if (!payload.report_category) {
+          showToast("error", "Ticket não enviado", "Escolha o tipo do problema.");
+          reportCategory.focus();
+          return;
+        }
       }
 
       submitRequestBtn.disabled = true;
@@ -1002,32 +1046,28 @@
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({
-            requester_name: requesterName,
-            game_title: gameTitle,
-            core,
-            notes
-          })
+          body: JSON.stringify(payload)
         });
 
         const data = await response.json().catch(() => ({}));
 
         if (!response.ok || !data.success) {
-          throw new Error(data.message || "Não foi possível enviar a solicitação.");
+          throw new Error(data.message || "Não foi possível enviar o ticket.");
         }
 
-        showToast("success", "Solicitação enviada", "Sua solicitação foi enviada com sucesso.");
+        showToast("success", "Ticket enviado", "Seu ticket foi enviado com sucesso.");
         resetRequestForm();
         closeRequest();
         loadMyTicketsBadge();
       } catch (error) {
-        showToast("error", "Erro ao enviar", error.message || "Não foi possível enviar sua solicitação.");
+        showToast("error", "Erro ao enviar", error.message || "Não foi possível enviar o ticket.");
       } finally {
         submitRequestBtn.disabled = false;
         submitRequestBtn.textContent = "Enviar";
       }
     });
 
+    syncTicketForm();
     checkAdminVisibility();
     loadMyTicketsBadge();
   </script>
