@@ -15,11 +15,13 @@
   <style>
     *{box-sizing:border-box}
     html,body{margin:0;width:100%;min-height:100%}
+
     body{
       background:#0a0a0f;
       color:#e6e6e6;
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;
     }
+
     .bg{
       position:fixed;
       inset:0;
@@ -28,6 +30,7 @@
         #0a0a0f;
       pointer-events:none;
     }
+
     .shell{
       position:relative;
       min-height:100vh;
@@ -35,10 +38,11 @@
       justify-content:center;
       padding:28px;
     }
+
     .card{
       position:relative;
       width:100%;
-      max-width:1000px;
+      max-width:1080px;
       background:#111116;
       border:1px solid rgba(255,255,255,.06);
       border-radius:14px;
@@ -48,6 +52,7 @@
       gap:18px;
       box-shadow:0 12px 40px rgba(0,0,0,.35);
     }
+
     .back{
       position:absolute;
       top:16px;
@@ -59,21 +64,25 @@
       border-radius:6px;
       transition:.15s;
     }
+
     .back:hover{
       color:#fff;
       background:rgba(255,255,255,.05);
     }
+
     .title{
       margin:0;
       font-size:20px;
       font-weight:600;
       color:#f2f2f2;
     }
+
     .subtitle{
       margin:0;
       font-size:13px;
       color:#8d8d8d;
     }
+
     .loading,.error,.empty{
       padding:14px;
       border:1px solid rgba(255,255,255,.06);
@@ -82,12 +91,17 @@
       font-size:13px;
       color:#8b8b8b;
     }
-    .error{color:#ff9f9f}
+
+    .error{
+      color:#ff9f9f;
+    }
+
     .requests{
       display:flex;
       flex-direction:column;
       gap:14px;
     }
+
     .request-card{
       border:1px solid rgba(255,255,255,.06);
       border-radius:12px;
@@ -97,6 +111,17 @@
       flex-direction:column;
       gap:12px;
     }
+
+    .request-card--request{
+      border-color:rgba(106,0,255,.18);
+      box-shadow:inset 0 0 0 1px rgba(106,0,255,.05);
+    }
+
+    .request-card--report{
+      border-color:rgba(255,179,71,.18);
+      box-shadow:inset 0 0 0 1px rgba(255,179,71,.05);
+    }
+
     .request-top{
       display:flex;
       align-items:flex-start;
@@ -104,17 +129,37 @@
       gap:12px;
       flex-wrap:wrap;
     }
+
+    .request-title-wrap{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:0;
+      flex:1;
+    }
+
+    .request-kicker{
+      font-size:11px;
+      color:#8d8d8d;
+      text-transform:uppercase;
+      letter-spacing:.6px;
+    }
+
     .request-game{
       margin:0;
-      font-size:15px;
+      font-size:16px;
       font-weight:600;
       color:#f2f2f2;
+      word-break:break-word;
     }
+
     .request-meta{
       display:flex;
       flex-wrap:wrap;
       gap:8px;
+      justify-content:flex-end;
     }
+
     .badge{
       display:inline-flex;
       align-items:center;
@@ -128,55 +173,84 @@
       border:1px solid rgba(255,255,255,.08);
       background:rgba(255,255,255,.03);
       color:#d8d8d8;
+      white-space:nowrap;
     }
+
     .badge--request{
       color:#d7d0ff;
       background:rgba(106,0,255,.14);
       border-color:rgba(106,0,255,.28);
     }
+
     .badge--report{
       color:#ffd7a3;
       background:rgba(255,179,71,.12);
       border-color:rgba(255,179,71,.24);
     }
+
     .badge--psx{
       color:#d7d0ff;
       background:rgba(106,0,255,.14);
       border-color:rgba(106,0,255,.28);
     }
+
     .badge--n64{
       color:#bfe3ff;
       background:rgba(0,153,255,.12);
       border-color:rgba(0,153,255,.22);
     }
+
+    .badge--downloadoff{
+      color:#ffd0d0;
+      background:rgba(255,77,77,.12);
+      border-color:rgba(255,77,77,.24);
+    }
+
+    .badge--errosite{
+      color:#ffe1ab;
+      background:rgba(255,179,71,.12);
+      border-color:rgba(255,179,71,.24);
+    }
+
+    .badge--outro{
+      color:#d0d0d0;
+      background:rgba(255,255,255,.06);
+      border-color:rgba(255,255,255,.12);
+    }
+
     .badge--pending{
       color:#ffd899;
       background:rgba(255,179,71,.12);
       border-color:rgba(255,179,71,.22);
     }
+
     .request-info{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
       gap:10px;
     }
+
     .request-block{
       display:flex;
       flex-direction:column;
       gap:4px;
       min-width:0;
     }
+
     .request-label{
       font-size:11px;
       color:#8d8d8d;
       text-transform:uppercase;
       letter-spacing:.5px;
     }
+
     .request-value{
       font-size:13px;
       color:#e6e6e6;
       word-break:break-word;
       line-height:1.5;
     }
+
     .reply-box{
       border-top:1px solid rgba(255,255,255,.06);
       padding-top:12px;
@@ -184,10 +258,12 @@
       flex-direction:column;
       gap:10px;
     }
+
     .reply-actions{
       display:flex;
       justify-content:flex-end;
     }
+
     .btn{
       height:40px;
       padding:0 16px;
@@ -200,22 +276,27 @@
       justify-content:center;
       font-size:14px;
     }
+
     .btn--primary{
       background:#6a00ff;
       color:#fff;
     }
+
     .btn--primary:hover{
       background:#7c1cff;
     }
+
     .field{
       display:flex;
       flex-direction:column;
       gap:8px;
     }
+
     .field label{
       font-size:12px;
       color:#b8b8b8;
     }
+
     .field select,
     .field textarea{
       width:100%;
@@ -227,6 +308,7 @@
       outline:none;
       transition:.15s;
     }
+
     .field select{
       padding-right:38px;
       appearance:none;
@@ -237,15 +319,18 @@
       background-position:right 14px center;
       background-size:12px;
     }
+
     .field textarea{
       height:90px;
       resize:none;
     }
+
     .field select:focus,
     .field textarea:focus{
       border-color:rgba(106,0,255,.65);
       background:#0f0f16;
     }
+
     .toast-wrap{
       position:fixed;
       right:16px;
@@ -256,6 +341,7 @@
       gap:10px;
       pointer-events:none;
     }
+
     .toast{
       min-width:280px;
       max-width:420px;
@@ -266,14 +352,17 @@
       color:#e6e6e6;
       box-shadow:0 18px 40px rgba(0,0,0,.35);
     }
+
     .toast--success{border-color:rgba(60,255,92,.18)}
     .toast--error{border-color:rgba(255,77,77,.18)}
     .toast-title{display:block;font-size:13px;font-weight:600;margin-bottom:4px}
     .toast-text{display:block;font-size:12px;line-height:1.5;color:#b8b8b8}
+
     @media (max-width:700px){
       .shell{padding:16px}
       .card{padding:52px 16px 16px}
       .request-info{grid-template-columns:1fr}
+      .request-meta{justify-content:flex-start}
     }
   </style>
 </head>
@@ -337,6 +426,31 @@
       return "Outro";
     }
 
+    function reportCategoryBadgeClass(value) {
+      const v = String(value || "").toLowerCase();
+      if (v === "download_off") return "badge--downloadoff";
+      if (v === "erro_site") return "badge--errosite";
+      return "badge--outro";
+    }
+
+    function buildTypeSummary(item) {
+      const isReport = item.ticket_type === "report";
+
+      if (isReport) {
+        return {
+          cardClass: "request-card request-card--report",
+          kicker: "Reporte enviado",
+          title: item.report_subject || "Reporte sem assunto"
+        };
+      }
+
+      return {
+        cardClass: "request-card request-card--request",
+        kicker: "Solicitação de jogo",
+        title: item.game_title || "Solicitação sem título"
+      };
+    }
+
     async function loadTickets(){
       if (!loggedUser) {
         contentArea.innerHTML = `<div class="error">Usuário não encontrado na sessão.</div>`;
@@ -362,12 +476,15 @@
           <div class="requests">
             ${requests.map(item => {
               const isReport = item.ticket_type === "report";
-              const title = isReport ? item.report_subject : item.game_title;
+              const summary = buildTypeSummary(item);
 
               return `
-                <div class="request-card" data-ticket-id="${item.id}">
+                <div class="${summary.cardClass}" data-ticket-id="${item.id}">
                   <div class="request-top">
-                    <h2 class="request-game">${escapeHtml(title || "Ticket")}</h2>
+                    <div class="request-title-wrap">
+                      <span class="request-kicker">${escapeHtml(summary.kicker)}</span>
+                      <h2 class="request-game">${escapeHtml(summary.title)}</h2>
+                    </div>
 
                     <div class="request-meta">
                       <span class="badge ${isReport ? "badge--report" : "badge--request"}">
@@ -377,6 +494,12 @@
                       ${!isReport ? `
                         <span class="badge ${String(item.core).toLowerCase() === "n64" ? "badge--n64" : "badge--psx"}">
                           ${escapeHtml(formatCore(item.core))}
+                        </span>
+                      ` : ""}
+
+                      ${isReport ? `
+                        <span class="badge ${reportCategoryBadgeClass(item.report_category)}">
+                          ${escapeHtml(formatReportCategory(item.report_category))}
                         </span>
                       ` : ""}
 
@@ -400,17 +523,15 @@
                         <span class="request-label">Tipo do problema</span>
                         <span class="request-value">${escapeHtml(formatReportCategory(item.report_category))}</span>
                       </div>
-                    ` : ""}
-
-                    ${!isReport ? `
+                    ` : `
                       <div class="request-block">
                         <span class="request-label">Core solicitado</span>
                         <span class="request-value">${escapeHtml(formatCore(item.core))}</span>
                       </div>
-                    ` : ""}
+                    `}
 
                     <div class="request-block" style="grid-column:1 / -1;">
-                      <span class="request-label">${isReport ? "Observação do reporte" : "Observação inicial"}</span>
+                      <span class="request-label">${isReport ? "Descrição do reporte" : "Observação inicial"}</span>
                       <span class="request-value">${escapeHtml(item.notes || "Sem observações")}</span>
                     </div>
 
