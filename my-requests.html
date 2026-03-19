@@ -129,6 +129,16 @@
       background:rgba(255,255,255,.03);
       color:#d8d8d8;
     }
+    .badge--request{
+      color:#d7d0ff;
+      background:rgba(106,0,255,.14);
+      border-color:rgba(106,0,255,.28);
+    }
+    .badge--report{
+      color:#ffd7a3;
+      background:rgba(255,179,71,.12);
+      border-color:rgba(255,179,71,.24);
+    }
     .badge--psx{
       color:#d7d0ff;
       background:rgba(106,0,255,.14);
@@ -275,7 +285,7 @@
     <section class="card">
       <a class="back" href="./reyalp.html">Voltar</a>
       <h1 class="title">Meus Tickets</h1>
-      <p class="subtitle">Acompanhe o status das suas solicitações.</p>
+      <p class="subtitle">Acompanhe solicitações e reportes enviados por você.</p>
       <div id="contentArea">
         <div class="loading">Carregando seus tickets...</div>
       </div>
@@ -337,6 +347,13 @@
       return "badge--pending";
     }
 
+    function formatReportCategory(value) {
+      const v = String(value || "").toLowerCase();
+      if (v === "download_off") return "Download off";
+      if (v === "erro_site") return "Erro no site";
+      return "Outro";
+    }
+
     async function markRepliesAsSeen() {
       if (!loggedUser) return;
 
@@ -372,69 +389,94 @@
         const requests = Array.isArray(data.requests) ? data.requests : [];
 
         if (!requests.length) {
-          contentArea.innerHTML = `<div class="empty">Você ainda não enviou nenhuma solicitação.</div>`;
+          contentArea.innerHTML = `<div class="empty">Você ainda não enviou nenhum ticket.</div>`;
           return;
         }
 
         contentArea.innerHTML = `
           <div class="requests">
-            ${requests.map(item => `
-              <div class="request-card" data-ticket-id="${item.id}">
-                <div class="request-top">
-                  <h2 class="request-game">${escapeHtml(item.game_title)}</h2>
+            ${requests.map(item => {
+              const isReport = item.ticket_type === "report";
+              const title = isReport ? item.report_subject : item.game_title;
 
-                  <div class="request-meta">
-                    <span class="badge ${String(item.core).toLowerCase() === "n64" ? "badge--n64" : "badge--psx"}">
-                      ${escapeHtml(formatCore(item.core))}
-                    </span>
+              return `
+                <div class="request-card" data-ticket-id="${item.id}">
+                  <div class="request-top">
+                    <h2 class="request-game">${escapeHtml(title || "Ticket")}</h2>
 
-                    <span class="badge ${statusBadgeClass(item.status)}">
-                      ${escapeHtml(formatStatus(item.status))}
-                    </span>
-                  </div>
-                </div>
+                    <div class="request-meta">
+                      <span class="badge ${isReport ? "badge--report" : "badge--request"}">
+                        ${isReport ? "Reporte" : "Solicitação"}
+                      </span>
 
-                <div class="request-info">
-                  <div class="request-block">
-                    <span class="request-label">Enviado em</span>
-                    <span class="request-value">${escapeHtml(formatDate(item.created_at))}</span>
-                  </div>
+                      ${!isReport && item.core ? `
+                        <span class="badge ${String(item.core).toLowerCase() === "n64" ? "badge--n64" : "badge--psx"}">
+                          ${escapeHtml(formatCore(item.core))}
+                        </span>
+                      ` : ""}
 
-                  <div class="request-block">
-                    <span class="request-label">Respondido em</span>
-                    <span class="request-value">${escapeHtml(item.reviewed_at ? formatDate(item.reviewed_at) : "Ainda não respondido")}</span>
-                  </div>
-
-                  <div class="request-block" style="grid-column:1 / -1;">
-                    <span class="request-label">Sua observação inicial</span>
-                    <span class="request-value">${escapeHtml(item.notes || "Sem observações")}</span>
-                  </div>
-
-                  <div class="request-block" style="grid-column:1 / -1;">
-                    <span class="request-label">Seu último complemento</span>
-                    <span class="request-value">${escapeHtml(item.user_followup || "Nenhum complemento enviado")}</span>
-                  </div>
-
-                  <div class="request-block" style="grid-column:1 / -1;">
-                    <span class="request-label">Resposta do admin</span>
-                    <span class="request-value">${escapeHtml(item.admin_reply || "Sem resposta ainda")}</span>
-                  </div>
-                </div>
-
-                ${item.status === "pending_info" ? `
-                  <div class="followup-box">
-                    <div class="field">
-                      <label>Enviar complemento</label>
-                      <textarea class="followup-text" maxlength="1000" placeholder="Digite aqui as informações adicionais solicitadas pelo admin..."></textarea>
-                    </div>
-
-                    <div class="followup-actions">
-                      <button type="button" class="btn btn--primary followup-send">Reenviar ticket</button>
+                      <span class="badge ${statusBadgeClass(item.status)}">
+                        ${escapeHtml(formatStatus(item.status))}
+                      </span>
                     </div>
                   </div>
-                ` : ""}
-              </div>
-            `).join("")}
+
+                  <div class="request-info">
+                    <div class="request-block">
+                      <span class="request-label">Enviado em</span>
+                      <span class="request-value">${escapeHtml(formatDate(item.created_at))}</span>
+                    </div>
+
+                    <div class="request-block">
+                      <span class="request-label">Respondido em</span>
+                      <span class="request-value">${escapeHtml(item.reviewed_at ? formatDate(item.reviewed_at) : "Ainda não respondido")}</span>
+                    </div>
+
+                    ${isReport ? `
+                      <div class="request-block">
+                        <span class="request-label">Tipo do problema</span>
+                        <span class="request-value">${escapeHtml(formatReportCategory(item.report_category))}</span>
+                      </div>
+                    ` : ""}
+
+                    ${!isReport && item.core ? `
+                      <div class="request-block">
+                        <span class="request-label">Core solicitado</span>
+                        <span class="request-value">${escapeHtml(formatCore(item.core))}</span>
+                      </div>
+                    ` : ""}
+
+                    <div class="request-block" style="grid-column:1 / -1;">
+                      <span class="request-label">${isReport ? "Descrição do reporte" : "Sua observação inicial"}</span>
+                      <span class="request-value">${escapeHtml(item.notes || "Sem observações")}</span>
+                    </div>
+
+                    <div class="request-block" style="grid-column:1 / -1;">
+                      <span class="request-label">Seu último complemento</span>
+                      <span class="request-value">${escapeHtml(item.user_followup || "Nenhum complemento enviado")}</span>
+                    </div>
+
+                    <div class="request-block" style="grid-column:1 / -1;">
+                      <span class="request-label">Resposta do admin</span>
+                      <span class="request-value">${escapeHtml(item.admin_reply || "Sem resposta ainda")}</span>
+                    </div>
+                  </div>
+
+                  ${item.status === "pending_info" ? `
+                    <div class="followup-box">
+                      <div class="field">
+                        <label>Enviar complemento</label>
+                        <textarea class="followup-text" maxlength="1000" placeholder="Digite aqui as informações adicionais solicitadas pelo admin..."></textarea>
+                      </div>
+
+                      <div class="followup-actions">
+                        <button type="button" class="btn btn--primary followup-send">Reenviar ticket</button>
+                      </div>
+                    </div>
+                  ` : ""}
+                </div>
+              `;
+            }).join("")}
           </div>
         `;
 
