@@ -48,7 +48,22 @@ module.exports = async function handler(req, res) {
     if (req.method === "GET") {
       const { data, error } = await supabase
         .from("game_requests")
-        .select("id, requester_name, game_title, core, notes, user_followup, status, admin_reply, reviewed_by, reviewed_at, created_at")
+        .select(`
+          id,
+          requester_name,
+          ticket_type,
+          game_title,
+          core,
+          report_subject,
+          report_category,
+          notes,
+          user_followup,
+          status,
+          admin_reply,
+          reviewed_by,
+          reviewed_at,
+          created_at
+        `)
         .eq("status", "pending")
         .order("created_at", { ascending: false });
 
