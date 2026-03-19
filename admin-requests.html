@@ -9,7 +9,7 @@
   <link rel="icon" href="favicon.png" type="image/png">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Página Inicial - Workday</title>
+  <title>Painel de Tickets - Workday</title>
   <meta name="theme-color" content="#0a0a0f" />
 
   <style>
@@ -128,6 +128,16 @@
       border:1px solid rgba(255,255,255,.08);
       background:rgba(255,255,255,.03);
       color:#d8d8d8;
+    }
+    .badge--request{
+      color:#d7d0ff;
+      background:rgba(106,0,255,.14);
+      border-color:rgba(106,0,255,.28);
+    }
+    .badge--report{
+      color:#ffd7a3;
+      background:rgba(255,179,71,.12);
+      border-color:rgba(255,179,71,.24);
     }
     .badge--psx{
       color:#d7d0ff;
@@ -274,7 +284,7 @@
     <section class="card">
       <a class="back" href="./reyalp.html">Voltar</a>
       <h1 class="title">Painel de Tickets</h1>
-      <p class="subtitle">Visualize e responda as solicitações pendentes.</p>
+      <p class="subtitle">Visualize e responda solicitações e reportes pendentes.</p>
       <div id="contentArea">
         <div class="loading">Carregando tickets...</div>
       </div>
@@ -320,6 +330,13 @@
       }
     }
 
+    function formatReportCategory(value) {
+      const v = String(value || "").toLowerCase();
+      if (v === "download_off") return "Download off";
+      if (v === "erro_site") return "Erro no site";
+      return "Outro";
+    }
+
     async function loadTickets(){
       if (!loggedUser) {
         contentArea.innerHTML = `<div class="error">Usuário não encontrado na sessão.</div>`;
@@ -343,63 +360,88 @@
 
         contentArea.innerHTML = `
           <div class="requests">
-            ${requests.map(item => `
-              <div class="request-card" data-ticket-id="${item.id}">
-                <div class="request-top">
-                  <h2 class="request-game">${escapeHtml(item.game_title)}</h2>
+            ${requests.map(item => {
+              const isReport = item.ticket_type === "report";
+              const title = isReport ? item.report_subject : item.game_title;
 
-                  <div class="request-meta">
-                    <span class="badge ${String(item.core).toLowerCase() === "n64" ? "badge--n64" : "badge--psx"}">
-                      ${escapeHtml(formatCore(item.core))}
-                    </span>
+              return `
+                <div class="request-card" data-ticket-id="${item.id}">
+                  <div class="request-top">
+                    <h2 class="request-game">${escapeHtml(title || "Ticket")}</h2>
 
-                    <span class="badge badge--pending">Pendente</span>
+                    <div class="request-meta">
+                      <span class="badge ${isReport ? "badge--report" : "badge--request"}">
+                        ${isReport ? "Reporte" : "Solicitação"}
+                      </span>
+
+                      ${!isReport ? `
+                        <span class="badge ${String(item.core).toLowerCase() === "n64" ? "badge--n64" : "badge--psx"}">
+                          ${escapeHtml(formatCore(item.core))}
+                        </span>
+                      ` : ""}
+
+                      <span class="badge badge--pending">Pendente</span>
+                    </div>
+                  </div>
+
+                  <div class="request-info">
+                    <div class="request-block">
+                      <span class="request-label">Solicitante</span>
+                      <span class="request-value">${escapeHtml(item.requester_name || "Não informado")}</span>
+                    </div>
+
+                    <div class="request-block">
+                      <span class="request-label">Enviado em</span>
+                      <span class="request-value">${escapeHtml(formatDate(item.created_at))}</span>
+                    </div>
+
+                    ${isReport ? `
+                      <div class="request-block">
+                        <span class="request-label">Tipo do problema</span>
+                        <span class="request-value">${escapeHtml(formatReportCategory(item.report_category))}</span>
+                      </div>
+                    ` : ""}
+
+                    ${!isReport ? `
+                      <div class="request-block">
+                        <span class="request-label">Core solicitado</span>
+                        <span class="request-value">${escapeHtml(formatCore(item.core))}</span>
+                      </div>
+                    ` : ""}
+
+                    <div class="request-block" style="grid-column:1 / -1;">
+                      <span class="request-label">${isReport ? "Observação do reporte" : "Observação inicial"}</span>
+                      <span class="request-value">${escapeHtml(item.notes || "Sem observações")}</span>
+                    </div>
+
+                    <div class="request-block" style="grid-column:1 / -1;">
+                      <span class="request-label">Complemento do usuário</span>
+                      <span class="request-value">${escapeHtml(item.user_followup || "Sem complemento enviado")}</span>
+                    </div>
+                  </div>
+
+                  <div class="reply-box">
+                    <div class="field">
+                      <label>Status da resposta</label>
+                      <select class="reply-status">
+                        <option value="approved">Aprovado</option>
+                        <option value="rejected">Reprovado</option>
+                        <option value="pending_info">Análise pendente</option>
+                      </select>
+                    </div>
+
+                    <div class="field">
+                      <label>Resposta do admin</label>
+                      <textarea class="reply-text" maxlength="1000" placeholder="Digite a resposta para o usuário..."></textarea>
+                    </div>
+
+                    <div class="reply-actions">
+                      <button type="button" class="btn btn--primary reply-save">Responder</button>
+                    </div>
                   </div>
                 </div>
-
-                <div class="request-info">
-                  <div class="request-block">
-                    <span class="request-label">Solicitante</span>
-                    <span class="request-value">${escapeHtml(item.requester_name || "Não informado")}</span>
-                  </div>
-
-                  <div class="request-block">
-                    <span class="request-label">Enviado em</span>
-                    <span class="request-value">${escapeHtml(formatDate(item.created_at))}</span>
-                  </div>
-
-                  <div class="request-block" style="grid-column:1 / -1;">
-                    <span class="request-label">Observação inicial</span>
-                    <span class="request-value">${escapeHtml(item.notes || "Sem observações")}</span>
-                  </div>
-
-                  <div class="request-block" style="grid-column:1 / -1;">
-                    <span class="request-label">Complemento do usuário</span>
-                    <span class="request-value">${escapeHtml(item.user_followup || "Sem complemento enviado")}</span>
-                  </div>
-                </div>
-
-                <div class="reply-box">
-                  <div class="field">
-                    <label>Status da resposta</label>
-                    <select class="reply-status">
-                      <option value="approved">Aprovado</option>
-                      <option value="rejected">Reprovado</option>
-                      <option value="pending_info">Análise pendente</option>
-                    </select>
-                  </div>
-
-                  <div class="field">
-                    <label>Resposta do admin</label>
-                    <textarea class="reply-text" maxlength="1000" placeholder="Digite a resposta para o usuário..."></textarea>
-                  </div>
-
-                  <div class="reply-actions">
-                    <button type="button" class="btn btn--primary reply-save">Responder</button>
-                  </div>
-                </div>
-              </div>
-            `).join("")}
+              `;
+            }).join("")}
           </div>
         `;
 
